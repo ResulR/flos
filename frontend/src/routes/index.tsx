@@ -1,13 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { Button } from '@/components/ui/button'
+import { PublicHeader } from '@/components/layout/public-header'
 
 export const Route = createFileRoute('/')({ component: Home })
 
 function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <Button>UI ready</Button>
-    </main>
+    <>
+      <PublicHeader />
+
+      <main className="site-container section-space">
+        <p className="type-secondary">Flo&apos;s Bikes</p>
+        <h1 className="type-display mt-3 max-w-3xl">
+          Vélos de seconde main.
+        </h1>
+      </main>
+    </>
   )
 }
