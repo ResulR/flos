@@ -38,9 +38,26 @@
   /* Typography */
   --font-sans: "Outfit Variable", sans-serif;
 
+  /* Layout */
+  --container-site: 80rem;
+  --container-wide: 90rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+
+  /* Radius */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
 }
 
 @layer base {
@@ -92,6 +109,38 @@
 
 
 @layer components {
+  .site-container {
+    width: 100%;
+    max-width: var(--container-site);
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  .site-container-wide {
+    width: 100%;
+    max-width: var(--container-wide);
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  .section-space {
+    padding-block: 3rem;
+  }
+
+  .surface-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-background);
+  }
+
+  .form-control {
+    min-height: 2.75rem;
+    border: 1px solid var(--color-input);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    padding-inline: 0.875rem;
+  }
+
   .type-display {
     font-size: clamp(2.5rem, 5vw, 3.75rem);
     font-weight: 500;
@@ -148,5 +197,28 @@
     font-size: clamp(0.875rem, 1vw, 0.9375rem);
     font-weight: 500;
     line-height: 1.2;
+  }
+}
+
+
+@media (min-width: 48rem) {
+  .site-container,
+  .site-container-wide {
+    padding-inline: 2rem;
+  }
+
+  .section-space {
+    padding-block: 4rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .site-container,
+  .site-container-wide {
+    padding-inline: 2.5rem;
+  }
+
+  .section-space {
+    padding-block: 6rem;
   }
 }
