@@ -43,7 +43,9 @@ function AdminProductsPage() {
               <tr className="border-t border-border">
                 <td className="px-5 py-4">
                   <p className="font-medium">Marque — Modèle</p>
-                  <p className="type-secondary text-muted-foreground">Année · Type</p>
+                  <p className="type-secondary text-muted-foreground">
+                    Année · Type
+                  </p>
                 </td>
                 <td className="px-5 py-4">Prix</td>
                 <td className="px-5 py-4">Très bon état</td>

@@ -91,7 +91,9 @@ export function AdminShell({
             <div className="flex items-center gap-3">
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-medium">Administrateur</p>
-                <p className="text-xs text-muted-foreground">Compte unique V1</p>
+                <p className="text-xs text-muted-foreground">
+                  Compte unique V1
+                </p>
               </div>
 
               <button
@@ -121,10 +123,7 @@ export function AdminShell({
 
 function AdminNavigation({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <nav
-      aria-label="Navigation administrateur"
-      className="space-y-1 p-4"
-    >
+    <nav aria-label="Navigation administrateur" className="space-y-1 p-4">
       {navigation.map((item) => {
         const Icon = item.icon
 

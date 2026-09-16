@@ -32,7 +32,10 @@ function AdminReservationsPage() {
                 <td className="px-5 py-4 font-medium">Marque — Modèle</td>
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-2">
-                    <Clock3 aria-hidden="true" className="size-4 text-primary" />
+                    <Clock3
+                      aria-hidden="true"
+                      className="size-4 text-primary"
+                    />
                     Date et heure
                   </div>
                 </td>

@@ -147,7 +147,6 @@ function CheckoutPage() {
             </p>
           </aside>
         </div>
-
       </section>
     </PublicPage>
   )
@@ -165,11 +164,7 @@ function Field({
   return (
     <label className="block">
       <span className="type-label mb-2 block">{label}</span>
-      <input
-        name={name}
-        type={type}
-        className="form-control w-full"
-      />
+      <input name={name} type={type} className="form-control w-full" />
     </label>
   )
 }
@@ -215,10 +210,16 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <dt className={strong ? 'font-medium' : 'type-secondary text-muted-foreground'}>
+      <dt
+        className={
+          strong ? 'font-medium' : 'type-secondary text-muted-foreground'
+        }
+      >
         {label}
       </dt>
-      <dd className={strong ? 'text-xl font-medium' : 'font-medium'}>{value}</dd>
+      <dd className={strong ? 'text-xl font-medium' : 'font-medium'}>
+        {value}
+      </dd>
     </div>
   )
 }

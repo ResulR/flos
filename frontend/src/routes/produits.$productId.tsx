@@ -142,10 +142,7 @@ function ProductPage() {
 
             <dl className="mt-5 divide-y divide-border border-y border-border">
               {['Marque', 'Modèle', 'Année', 'Type', 'État'].map((label) => (
-                <div
-                  key={label}
-                  className="grid grid-cols-2 gap-4 py-4"
-                >
+                <div key={label} className="grid grid-cols-2 gap-4 py-4">
                   <dt className="type-secondary text-muted-foreground">
                     {label}
                   </dt>
@@ -155,7 +152,6 @@ function ProductPage() {
             </dl>
           </section>
         </div>
-
       </section>
     </PublicPage>
   )

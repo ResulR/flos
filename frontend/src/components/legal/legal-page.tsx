@@ -6,11 +6,7 @@ type LegalPageProps = {
   children: React.ReactNode
 }
 
-export function LegalPage({
-  eyebrow,
-  title,
-  children,
-}: LegalPageProps) {
+export function LegalPage({ eyebrow, title, children }: LegalPageProps) {
   return (
     <PublicPage>
       <section className="border-b border-border bg-brand-gray-50">
@@ -23,9 +19,7 @@ export function LegalPage({
       </section>
 
       <article className="site-container py-12 lg:py-16">
-        <div className="max-w-3xl space-y-10">
-          {children}
-        </div>
+        <div className="max-w-3xl space-y-10">{children}</div>
       </article>
     </PublicPage>
   )

@@ -8,10 +8,7 @@ export const Route = createFileRoute('/cookies')({
 
 function CookiesPage() {
   return (
-    <LegalPage
-      eyebrow="Informations légales"
-      title="Politique de cookies"
-    >
+    <LegalPage eyebrow="Informations légales" title="Politique de cookies">
       <LegalSection title="Utilisation des cookies">
         <p>
           Cette page sera complétée selon les cookies et technologies réellement

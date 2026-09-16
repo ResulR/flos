@@ -74,7 +74,9 @@ function CataloguePage() {
             </div>
 
             <label className="relative block w-full lg:max-w-sm">
-              <span className="sr-only">Rechercher une marque ou un modèle</span>
+              <span className="sr-only">
+                Rechercher une marque ou un modèle
+              </span>
               <Search
                 aria-hidden="true"
                 className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"

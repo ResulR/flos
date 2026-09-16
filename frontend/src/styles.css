@@ -1,5 +1,5 @@
-@import "@fontsource-variable/outfit";
-@import "tailwindcss";
+@import '@fontsource-variable/outfit';
+@import 'tailwindcss';
 
 @theme {
   /* Flo's Bikes — palette web dérivée des visuels de marque */
@@ -36,7 +36,7 @@
   --color-destructive: #c51f2a;
 
   /* Typography */
-  --font-sans: "Outfit Variable", sans-serif;
+  --font-sans: 'Outfit Variable', sans-serif;
 
   /* Layout */
   --container-site: 80rem;
@@ -106,7 +106,6 @@
     outline-offset: 2px;
   }
 }
-
 
 @layer components {
   .site-container {
@@ -199,7 +198,6 @@
     line-height: 1.2;
   }
 }
-
 
 @media (min-width: 48rem) {
   .site-container,

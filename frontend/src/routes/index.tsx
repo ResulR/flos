@@ -26,7 +26,8 @@ function Home() {
 
               <p className="type-body mt-6 max-w-xl text-brand-gray-400">
                 Découvrez une sélection de vélos de seconde main dans un univers
-                simple, transparent et pensé pour aller droit à l&apos;essentiel.
+                simple, transparent et pensé pour aller droit à
+                l&apos;essentiel.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -174,8 +175,8 @@ function Home() {
               </h2>
 
               <p className="type-body mt-5 max-w-xl text-muted-foreground">
-                Flo&apos;s Bikes met l&apos;accent sur une sélection claire,
-                une expérience simple et un contact direct avec le vendeur.
+                Flo&apos;s Bikes met l&apos;accent sur une sélection claire, une
+                expérience simple et un contact direct avec le vendeur.
               </p>
 
               <a

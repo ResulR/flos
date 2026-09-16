@@ -44,8 +44,8 @@ function AboutPage() {
 
           <p className="type-body text-muted-foreground">
             Le contenu réel sur l’histoire du magasin, son fondateur et son
-            positionnement sera ajouté à partir des informations fournies par
-            le propriétaire. Aucun élément biographique n’est inventé ici.
+            positionnement sera ajouté à partir des informations fournies par le
+            propriétaire. Aucun élément biographique n’est inventé ici.
           </p>
         </div>
       </section>

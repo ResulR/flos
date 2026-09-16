@@ -14,11 +14,7 @@ export function PublicHeader() {
   return (
     <header className="border-b border-border bg-background">
       <div className="site-container flex h-20 items-center justify-between gap-8">
-        <a
-          href="/"
-          aria-label="Flo's Bikes — Accueil"
-          className="shrink-0"
-        >
+        <a href="/" aria-label="Flo's Bikes — Accueil" className="shrink-0">
           <img
             src="/flos-bikes-logo.png"
             alt="Flo's Bikes"
@@ -47,7 +43,11 @@ export function PublicHeader() {
             aria-label="Panier, 0 article"
             className="relative inline-flex size-11 items-center justify-center rounded-md transition-colors hover:bg-muted"
           >
-            <ShoppingBag aria-hidden="true" className="size-5" strokeWidth={1.8} />
+            <ShoppingBag
+              aria-hidden="true"
+              className="size-5"
+              strokeWidth={1.8}
+            />
             <span className="absolute right-1.5 top-1.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium leading-none text-primary-foreground">
               0
             </span>

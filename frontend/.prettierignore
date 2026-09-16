@@ -1,0 +1,4 @@
+dist/
+.tanstack/
+node_modules/
+.cta.json

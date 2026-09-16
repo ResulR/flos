@@ -25,9 +25,7 @@ function ReservationPage() {
               Réservation gratuite
             </p>
 
-            <h1 className="type-display mt-3">
-              Garder ce vélo de côté.
-            </h1>
+            <h1 className="type-display mt-3">Garder ce vélo de côté.</h1>
 
             <p className="type-body mt-5 max-w-2xl text-muted-foreground">
               Une réservation rend immédiatement le vélo indisponible à l’achat
@@ -104,7 +102,6 @@ function ReservationPage() {
             </div>
           </aside>
         </div>
-
       </section>
     </PublicPage>
   )

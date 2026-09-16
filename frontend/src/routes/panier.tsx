@@ -105,7 +105,6 @@ function CartPage() {
             </p>
           </aside>
         </div>
-
       </section>
     </PublicPage>
   )

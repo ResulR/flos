@@ -2,10 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { CheckCircle2 } from 'lucide-react'
 
 import { AdminShell } from '@/components/admin/admin-shell'
-import {
-  AdminField,
-  AdminPanel,
-} from '@/components/admin/admin-ui'
+import { AdminField, AdminPanel } from '@/components/admin/admin-ui'
 
 export const Route = createFileRoute('/admin/parametres')({
   component: AdminSettingsPage,
@@ -21,23 +18,12 @@ function AdminSettingsPage() {
         >
           <form className="space-y-8 p-5 lg:p-6">
             <div className="grid gap-5 sm:grid-cols-2">
-              <AdminField
-                label="Téléphone"
-                name="phone"
-                type="tel"
-              />
+              <AdminField label="Téléphone" name="phone" type="tel" />
 
-              <AdminField
-                label="Email"
-                name="email"
-                type="email"
-              />
+              <AdminField label="Email" name="email" type="email" />
 
               <div className="sm:col-span-2">
-                <AdminField
-                  label="Adresse"
-                  name="address"
-                />
+                <AdminField label="Adresse" name="address" />
               </div>
 
               <AdminField

@@ -19,8 +19,8 @@ function OrderTrackingPage() {
           <h1 className="type-display mt-3">Commande #XXXX</h1>
 
           <p className="type-body mt-4 text-muted-foreground">
-            Cette page présente uniquement les informations nécessaires au
-            suivi de votre commande.
+            Cette page présente uniquement les informations nécessaires au suivi
+            de votre commande.
           </p>
 
           <div className="mt-10 grid gap-5 sm:grid-cols-3">
@@ -89,8 +89,8 @@ function OrderTrackingPage() {
             </p>
             <h2 className="type-heading-3 mt-3">Lien invalide ou expiré.</h2>
             <p className="type-body mt-3 text-muted-foreground">
-              Aucune information de commande ne doit être révélée lorsqu’un
-              lien de suivi n’est pas valide.
+              Aucune information de commande ne doit être révélée lorsqu’un lien
+              de suivi n’est pas valide.
             </p>
           </section>
         </div>

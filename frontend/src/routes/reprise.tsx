@@ -70,14 +70,9 @@ function TradeInPage() {
             <h2 className="type-heading-3">Photos</h2>
 
             <label className="mt-6 flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-brand-gray-400 bg-brand-gray-50 p-8 text-center">
-              <ImagePlus
-                aria-hidden="true"
-                className="size-7 text-primary"
-              />
+              <ImagePlus aria-hidden="true" className="size-7 text-primary" />
 
-              <span className="mt-4 font-medium">
-                Ajouter plusieurs photos
-              </span>
+              <span className="mt-4 font-medium">Ajouter plusieurs photos</span>
 
               <span className="type-secondary mt-2 max-w-md text-muted-foreground">
                 Les formats et limites définitifs seront appliqués par la
@@ -95,7 +90,6 @@ function TradeInPage() {
             Envoyer ma demande
           </button>
         </form>
-
       </section>
     </PublicPage>
   )

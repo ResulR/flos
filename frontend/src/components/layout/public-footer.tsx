@@ -33,9 +33,7 @@ export function PublicFooter({ phone, email }: PublicFooterProps) {
           </div>
 
           <div>
-            <p className="type-label mb-4 text-brand-white">
-              Navigation
-            </p>
+            <p className="type-label mb-4 text-brand-white">Navigation</p>
 
             <nav
               aria-label="Navigation secondaire"
@@ -54,9 +52,7 @@ export function PublicFooter({ phone, email }: PublicFooterProps) {
           </div>
 
           <div>
-            <p className="type-label mb-4 text-brand-white">
-              Contact
-            </p>
+            <p className="type-label mb-4 text-brand-white">Contact</p>
 
             <div className="flex flex-col items-start gap-3">
               {phone ? (
