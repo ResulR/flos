@@ -1,12 +1,71 @@
 @import "tailwindcss";
 
+@theme {
+  /* Flo's Bikes — palette web dérivée des visuels de marque */
+  --color-brand-red: #e30613;
+  --color-brand-red-dark: #b9040f;
+  --color-brand-black: #111111;
+  --color-brand-charcoal: #242424;
+  --color-brand-white: #ffffff;
+
+  --color-brand-gray-50: #f7f7f7;
+  --color-brand-gray-100: #eeeeee;
+  --color-brand-gray-200: #dddddd;
+  --color-brand-gray-400: #9a9a9a;
+  --color-brand-gray-600: #626262;
+  --color-brand-gray-800: #2f2f2f;
+
+  /* Semantic tokens */
+  --color-background: var(--color-brand-white);
+  --color-foreground: var(--color-brand-black);
+
+  --color-primary: var(--color-brand-red);
+  --color-primary-foreground: var(--color-brand-white);
+
+  --color-secondary: var(--color-brand-gray-100);
+  --color-secondary-foreground: var(--color-brand-black);
+
+  --color-muted: var(--color-brand-gray-50);
+  --color-muted-foreground: var(--color-brand-gray-600);
+
+  --color-border: var(--color-brand-gray-200);
+  --color-input: var(--color-brand-gray-200);
+  --color-ring: var(--color-brand-red);
+
+  --color-destructive: #c51f2a;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
+    border-color: var(--color-border);
+  }
+
+  html {
+    background: var(--color-background);
+    color: var(--color-foreground);
   }
 
   body {
     margin: 0;
     min-height: 100vh;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-brand-red);
+    color: var(--color-brand-white);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-red);
+    outline-offset: 2px;
   }
 }
