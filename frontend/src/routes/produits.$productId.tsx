@@ -156,18 +156,6 @@ function ProductPage() {
           </section>
         </div>
 
-        <aside className="mt-12 rounded-xl border border-brand-gray-800 bg-brand-black p-6 text-brand-white">
-          <p className="type-label uppercase tracking-[0.12em] text-brand-red">
-            État réservé
-          </p>
-          <p className="mt-2 text-lg font-medium">
-            Réservé jusqu’au 18/09
-          </p>
-          <p className="type-secondary mt-2 max-w-2xl text-brand-gray-400">
-            Lorsque cette situation est active, les actions d’achat et de
-            réservation sont désactivées jusqu’à l’expiration.
-          </p>
-        </aside>
       </section>
     </PublicPage>
   )

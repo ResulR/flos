@@ -45,7 +45,7 @@ function ReservationPage() {
               <fieldset className="border-t border-border pt-8">
                 <legend className="type-heading-3">Durée</legend>
 
-                <div className="mt-5 grid grid-cols-3 gap-3">
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   {[1, 2, 3].map((day) => (
                     <label
                       key={day}
@@ -105,23 +105,6 @@ function ReservationPage() {
           </aside>
         </div>
 
-        <section className="mt-16 grid gap-5 border-t border-border pt-10 md:grid-cols-2">
-          <div>
-            <h2 className="font-medium">Réservation confirmée</h2>
-            <p className="type-secondary mt-2 text-muted-foreground">
-              Le client reçoit une confirmation avec la date d’expiration de sa
-              réservation.
-            </p>
-          </div>
-
-          <div>
-            <h2 className="font-medium">Vélo indisponible</h2>
-            <p className="type-secondary mt-2 text-muted-foreground">
-              Si le vélo n’est plus disponible au moment de la validation, la
-              réservation n’est pas créée.
-            </p>
-          </div>
-        </section>
       </section>
     </PublicPage>
   )

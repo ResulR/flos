@@ -33,7 +33,7 @@ export function ProductCard({
     <article className="group">
       <a
         href={href}
-        className="block focus-visible:outline-none"
+        className="block rounded-xl"
         aria-label={`${brand} ${model}`}
       >
         <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-brand-gray-100">

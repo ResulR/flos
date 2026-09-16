@@ -96,23 +96,6 @@ function TradeInPage() {
           </button>
         </form>
 
-        <div className="mx-auto mt-14 grid max-w-4xl gap-5 border-t border-border pt-10 sm:grid-cols-2">
-          <div>
-            <p className="font-medium">Demande envoyée</p>
-            <p className="type-secondary mt-2 text-muted-foreground">
-              Un état de confirmation remplacera le formulaire après une
-              soumission réussie.
-            </p>
-          </div>
-
-          <div>
-            <p className="font-medium">Erreur de soumission</p>
-            <p className="type-secondary mt-2 text-muted-foreground">
-              Les erreurs resteront associées aux champs concernés sans effacer
-              les informations déjà saisies.
-            </p>
-          </div>
-        </div>
       </section>
     </PublicPage>
   )

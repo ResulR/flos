@@ -148,20 +148,6 @@ function CheckoutPage() {
           </aside>
         </div>
 
-        <section className="mt-16 grid gap-5 border-t border-border pt-10 md:grid-cols-3">
-          <StateBlock
-            title="Paiement en attente"
-            text="La commande reste dans un état d’attente tant que Stripe n’a pas confirmé le paiement."
-          />
-          <StateBlock
-            title="Paiement refusé"
-            text="Une erreur claire permet de revenir au paiement sans perdre les informations utiles."
-          />
-          <StateBlock
-            title="Commande confirmée"
-            text="Après confirmation, le client accède au récapitulatif et à son lien de suivi."
-          />
-        </section>
       </section>
     </PublicPage>
   )
@@ -233,15 +219,6 @@ function SummaryRow({
         {label}
       </dt>
       <dd className={strong ? 'text-xl font-medium' : 'font-medium'}>{value}</dd>
-    </div>
-  )
-}
-
-function StateBlock({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="border-l-2 border-primary pl-5">
-      <h3 className="font-medium">{title}</h3>
-      <p className="type-secondary mt-2 text-muted-foreground">{text}</p>
     </div>
   )
 }

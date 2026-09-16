@@ -106,18 +106,6 @@ function CartPage() {
           </aside>
         </div>
 
-        <section className="mt-16 border-t border-border pt-10">
-          <p className="type-label uppercase tracking-[0.12em] text-muted-foreground">
-            État vide
-          </p>
-          <h2 className="type-heading-3 mt-3">Votre panier est vide.</h2>
-          <a
-            href="/catalogue"
-            className="type-label mt-5 inline-flex text-primary"
-          >
-            Retourner au catalogue
-          </a>
-        </section>
       </section>
     </PublicPage>
   )

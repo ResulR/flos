@@ -29,7 +29,7 @@ function AdminProductsPage() {
         }
       >
         <div className="overflow-x-auto">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-[44rem] text-left text-sm">
             <thead className="bg-brand-gray-50 text-muted-foreground">
               <tr>
                 <th className="px-5 py-3 font-medium">Vélo</th>
