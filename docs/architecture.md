@@ -99,3 +99,89 @@ Avant d'ajouter une fonctionnalité :
 6. éviter toute abstraction sans besoin réel
 
 Une nouvelle fonctionnalité ne doit jamais être placée arbitrairement dans une route ou dans un dossier générique.
+
+## Panier sans compte
+
+Le panier public ne nécessite aucun compte client.
+
+En V1 :
+
+- le panier est conservé côté navigateur
+- il peut contenir plusieurs vélos différents
+- l'ajout au panier ne réserve pas un vélo
+- le navigateur ne constitue jamais une source fiable pour le prix ou la disponibilité
+- avant tout checkout, le serveur recharge les produits concernés et revalide leur prix et leur disponibilité
+- un produit indisponible, réservé, vendu, masqué ou supprimé ne peut pas être acheté depuis le panier
+
+Le panier doit stocker le minimum de données nécessaires, principalement les identifiants produits.
+
+Le checkout déclenché depuis un lien sécurisé de réservation est distinct du panier classique.
+Il concerne uniquement le vélo associé à cette réservation et utilise la preuve d'accès sécurisée de la réservation.
+
+## Authentification admin
+
+La V1 utilise un seul compte administrateur.
+
+Principes :
+
+- le mot de passe n'est jamais stocké en clair
+- l'authentification est vérifiée côté backend
+- la session admin utilise un cookie sécurisé `HttpOnly`
+- le cookie est `Secure` en production
+- le cookie utilise `SameSite=Lax`
+- les routes admin sensibles sont protégées côté serveur
+- aucune autorisation sensible ne repose uniquement sur le frontend
+- aucun système de rôles complexe n'est introduit en V1
+- une session doit pouvoir être révoquée
+- la durée de session reste configurable
+
+Les secrets d'authentification sont fournis par l'environnement et ne sont jamais commités dans le dépôt.
+
+## Internationalisation future
+
+La V1 est uniquement en français.
+
+Langues prévues à terme :
+
+- français (`fr`)
+- anglais (`en`)
+- néerlandais (`nl`)
+- espagnol (`es`)
+- italien (`it`)
+- allemand (`de`)
+- albanais (`sq`)
+
+La V1 ne met pas encore en place de routage multilingue complexe.
+
+Principes de préparation :
+
+- éviter de disperser durablement les textes métier dans les composants
+- permettre l'extraction progressive des textes vers des ressources de traduction
+- utiliser des identifiants de traduction stables lorsque l'internationalisation sera introduite
+- utiliser les API `Intl` pour les dates, nombres et montants
+- ne pas stocker en base une traduction séparée pour chaque champ tant qu'un besoin métier réel ne l'exige pas
+- conserver le français comme langue par défaut en V1
+
+L'architecture doit permettre l'ajout futur d'une couche i18n sans réécriture majeure des fonctionnalités métier.
+
+## Stockage persistant des médias
+
+Les fichiers uploadés ne sont pas stockés dans le dépôt Git.
+
+Le stockage persistant du projet utilise :
+
+`/var/lib/flos-bikes/media`
+
+Organisation prévue :
+
+- `/var/lib/flos-bikes/media/products`
+- `/var/lib/flos-bikes/media/trade-ins`
+
+Principes :
+
+- les fichiers survivent aux déploiements du code
+- PostgreSQL stocke uniquement les métadonnées et références nécessaires
+- le backend contrôle les écritures et suppressions
+- les chemins internes du serveur ne doivent pas être exposés directement au client
+- les déploiements ne doivent jamais nettoyer automatiquement ce répertoire
+- le dossier appartient au compte de service utilisé par l'application
