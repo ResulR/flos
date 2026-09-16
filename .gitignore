@@ -1,0 +1,42 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Builds / generated output
+dist/
+dist-ssr/
+build/
+coverage/
+.output/
+.nitro/
+.tanstack/
+.vinxi/
+.wrangler/
+
+# Runtime / temporary files
+*.log
+logs/
+tmp/
+temp/
+
+# Local uploads
+uploads/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Certificates / private keys
+*.pem
+*.key
+*.p12
+*.pfx
+
+# OS / editor local files
+.DS_Store
+*.local
