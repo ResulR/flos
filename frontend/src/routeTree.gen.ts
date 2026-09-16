@@ -10,13 +10,28 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AProposRouteImport } from './routes/a-propos'
 import { Route as CatalogueRouteImport } from './routes/catalogue'
+import { Route as CgvRouteImport } from './routes/cgv'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as PanierRouteImport } from './routes/panier'
+import { Route as RepriseRouteImport } from './routes/reprise'
+import { Route as CommandeTrackingTokenRouteImport } from './routes/commande.$trackingToken'
 import { Route as ProduitsProductIdRouteImport } from './routes/produits.$productId'
+import { Route as ReservationProductIdRouteImport } from './routes/reservation.$productId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AProposRoute = AProposRouteImport.update({
+  id: '/a-propos',
+  path: '/a-propos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CatalogueRoute = CatalogueRouteImport.update({
@@ -24,9 +39,49 @@ const CatalogueRoute = CatalogueRouteImport.update({
   path: '/catalogue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CgvRoute = CgvRouteImport.update({
+  id: '/cgv',
+  path: '/cgv',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfidentialiteRoute = ConfidentialiteRouteImport.update({
+  id: '/confidentialite',
+  path: '/confidentialite',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
+  id: '/mentions-legales',
+  path: '/mentions-legales',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PanierRoute = PanierRouteImport.update({
   id: '/panier',
   path: '/panier',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RepriseRoute = RepriseRouteImport.update({
+  id: '/reprise',
+  path: '/reprise',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommandeTrackingTokenRoute = CommandeTrackingTokenRouteImport.update({
+  id: '/commande/$trackingToken',
+  path: '/commande/$trackingToken',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProduitsProductIdRoute = ProduitsProductIdRouteImport.update({
@@ -34,39 +89,127 @@ const ProduitsProductIdRoute = ProduitsProductIdRouteImport.update({
   path: '/produits/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReservationProductIdRoute = ReservationProductIdRouteImport.update({
+  id: '/reservation/$productId',
+  path: '/reservation/$productId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/a-propos': typeof AProposRoute
   '/catalogue': typeof CatalogueRoute
+  '/cgv': typeof CgvRoute
+  '/checkout': typeof CheckoutRoute
+  '/confidentialite': typeof ConfidentialiteRoute
+  '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/panier': typeof PanierRoute
+  '/reprise': typeof RepriseRoute
+  '/commande/$trackingToken': typeof CommandeTrackingTokenRoute
   '/produits/$productId': typeof ProduitsProductIdRoute
+  '/reservation/$productId': typeof ReservationProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/a-propos': typeof AProposRoute
   '/catalogue': typeof CatalogueRoute
+  '/cgv': typeof CgvRoute
+  '/checkout': typeof CheckoutRoute
+  '/confidentialite': typeof ConfidentialiteRoute
+  '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/panier': typeof PanierRoute
+  '/reprise': typeof RepriseRoute
+  '/commande/$trackingToken': typeof CommandeTrackingTokenRoute
   '/produits/$productId': typeof ProduitsProductIdRoute
+  '/reservation/$productId': typeof ReservationProductIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/a-propos': typeof AProposRoute
   '/catalogue': typeof CatalogueRoute
+  '/cgv': typeof CgvRoute
+  '/checkout': typeof CheckoutRoute
+  '/confidentialite': typeof ConfidentialiteRoute
+  '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
+  '/mentions-legales': typeof MentionsLegalesRoute
   '/panier': typeof PanierRoute
+  '/reprise': typeof RepriseRoute
+  '/commande/$trackingToken': typeof CommandeTrackingTokenRoute
   '/produits/$productId': typeof ProduitsProductIdRoute
+  '/reservation/$productId': typeof ReservationProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/catalogue' | '/panier' | '/produits/$productId'
+  fullPaths:
+    | '/'
+    | '/a-propos'
+    | '/catalogue'
+    | '/cgv'
+    | '/checkout'
+    | '/confidentialite'
+    | '/contact'
+    | '/cookies'
+    | '/mentions-legales'
+    | '/panier'
+    | '/reprise'
+    | '/commande/$trackingToken'
+    | '/produits/$productId'
+    | '/reservation/$productId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/catalogue' | '/panier' | '/produits/$productId'
-  id: '__root__' | '/' | '/catalogue' | '/panier' | '/produits/$productId'
+  to:
+    | '/'
+    | '/a-propos'
+    | '/catalogue'
+    | '/cgv'
+    | '/checkout'
+    | '/confidentialite'
+    | '/contact'
+    | '/cookies'
+    | '/mentions-legales'
+    | '/panier'
+    | '/reprise'
+    | '/commande/$trackingToken'
+    | '/produits/$productId'
+    | '/reservation/$productId'
+  id:
+    | '__root__'
+    | '/'
+    | '/a-propos'
+    | '/catalogue'
+    | '/cgv'
+    | '/checkout'
+    | '/confidentialite'
+    | '/contact'
+    | '/cookies'
+    | '/mentions-legales'
+    | '/panier'
+    | '/reprise'
+    | '/commande/$trackingToken'
+    | '/produits/$productId'
+    | '/reservation/$productId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AProposRoute: typeof AProposRoute
   CatalogueRoute: typeof CatalogueRoute
+  CgvRoute: typeof CgvRoute
+  CheckoutRoute: typeof CheckoutRoute
+  ConfidentialiteRoute: typeof ConfidentialiteRoute
+  ContactRoute: typeof ContactRoute
+  CookiesRoute: typeof CookiesRoute
+  MentionsLegalesRoute: typeof MentionsLegalesRoute
   PanierRoute: typeof PanierRoute
+  RepriseRoute: typeof RepriseRoute
+  CommandeTrackingTokenRoute: typeof CommandeTrackingTokenRoute
   ProduitsProductIdRoute: typeof ProduitsProductIdRoute
+  ReservationProductIdRoute: typeof ReservationProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -78,11 +221,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/a-propos': {
+      id: '/a-propos'
+      path: '/a-propos'
+      fullPath: '/a-propos'
+      preLoaderRoute: typeof AProposRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/catalogue': {
       id: '/catalogue'
       path: '/catalogue'
       fullPath: '/catalogue'
       preLoaderRoute: typeof CatalogueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cgv': {
+      id: '/cgv'
+      path: '/cgv'
+      fullPath: '/cgv'
+      preLoaderRoute: typeof CgvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confidentialite': {
+      id: '/confidentialite'
+      path: '/confidentialite'
+      fullPath: '/confidentialite'
+      preLoaderRoute: typeof ConfidentialiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentions-legales': {
+      id: '/mentions-legales'
+      path: '/mentions-legales'
+      fullPath: '/mentions-legales'
+      preLoaderRoute: typeof MentionsLegalesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/panier': {
@@ -92,6 +284,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanierRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reprise': {
+      id: '/reprise'
+      path: '/reprise'
+      fullPath: '/reprise'
+      preLoaderRoute: typeof RepriseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/commande/$trackingToken': {
+      id: '/commande/$trackingToken'
+      path: '/commande/$trackingToken'
+      fullPath: '/commande/$trackingToken'
+      preLoaderRoute: typeof CommandeTrackingTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/produits/$productId': {
       id: '/produits/$productId'
       path: '/produits/$productId'
@@ -99,14 +305,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProduitsProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reservation/$productId': {
+      id: '/reservation/$productId'
+      path: '/reservation/$productId'
+      fullPath: '/reservation/$productId'
+      preLoaderRoute: typeof ReservationProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AProposRoute: AProposRoute,
   CatalogueRoute: CatalogueRoute,
+  CgvRoute: CgvRoute,
+  CheckoutRoute: CheckoutRoute,
+  ConfidentialiteRoute: ConfidentialiteRoute,
+  ContactRoute: ContactRoute,
+  CookiesRoute: CookiesRoute,
+  MentionsLegalesRoute: MentionsLegalesRoute,
   PanierRoute: PanierRoute,
+  RepriseRoute: RepriseRoute,
+  CommandeTrackingTokenRoute: CommandeTrackingTokenRoute,
   ProduitsProductIdRoute: ProduitsProductIdRoute,
+  ReservationProductIdRoute: ReservationProductIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
