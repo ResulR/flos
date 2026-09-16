@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AProposRouteImport } from './routes/a-propos'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CatalogueRouteImport } from './routes/catalogue'
 import { Route as CgvRouteImport } from './routes/cgv'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -20,6 +21,13 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as PanierRouteImport } from './routes/panier'
 import { Route as RepriseRouteImport } from './routes/reprise'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminCommandesRouteImport } from './routes/admin.commandes'
+import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminParametresRouteImport } from './routes/admin.parametres'
+import { Route as AdminProduitsRouteImport } from './routes/admin.produits'
+import { Route as AdminReprisesRouteImport } from './routes/admin.reprises'
+import { Route as AdminReservationsRouteImport } from './routes/admin.reservations'
 import { Route as CommandeTrackingTokenRouteImport } from './routes/commande.$trackingToken'
 import { Route as ProduitsProductIdRouteImport } from './routes/produits.$productId'
 import { Route as ReservationProductIdRouteImport } from './routes/reservation.$productId'
@@ -32,6 +40,11 @@ const IndexRoute = IndexRouteImport.update({
 const AProposRoute = AProposRouteImport.update({
   id: '/a-propos',
   path: '/a-propos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CatalogueRoute = CatalogueRouteImport.update({
@@ -79,6 +92,41 @@ const RepriseRoute = RepriseRouteImport.update({
   path: '/reprise',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCommandesRoute = AdminCommandesRouteImport.update({
+  id: '/commandes',
+  path: '/commandes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminParametresRoute = AdminParametresRouteImport.update({
+  id: '/parametres',
+  path: '/parametres',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProduitsRoute = AdminProduitsRouteImport.update({
+  id: '/produits',
+  path: '/produits',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReprisesRoute = AdminReprisesRouteImport.update({
+  id: '/reprises',
+  path: '/reprises',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReservationsRoute = AdminReservationsRouteImport.update({
+  id: '/reservations',
+  path: '/reservations',
+  getParentRoute: () => AdminRoute,
+} as any)
 const CommandeTrackingTokenRoute = CommandeTrackingTokenRouteImport.update({
   id: '/commande/$trackingToken',
   path: '/commande/$trackingToken',
@@ -98,6 +146,7 @@ const ReservationProductIdRoute = ReservationProductIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/a-propos': typeof AProposRoute
+  '/admin': typeof AdminRouteWithChildren
   '/catalogue': typeof CatalogueRoute
   '/cgv': typeof CgvRoute
   '/checkout': typeof CheckoutRoute
@@ -107,9 +156,16 @@ export interface FileRoutesByFullPath {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/panier': typeof PanierRoute
   '/reprise': typeof RepriseRoute
+  '/admin/commandes': typeof AdminCommandesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/parametres': typeof AdminParametresRoute
+  '/admin/produits': typeof AdminProduitsRoute
+  '/admin/reprises': typeof AdminReprisesRoute
+  '/admin/reservations': typeof AdminReservationsRoute
   '/commande/$trackingToken': typeof CommandeTrackingTokenRoute
   '/produits/$productId': typeof ProduitsProductIdRoute
   '/reservation/$productId': typeof ReservationProductIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,14 +179,22 @@ export interface FileRoutesByTo {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/panier': typeof PanierRoute
   '/reprise': typeof RepriseRoute
+  '/admin/commandes': typeof AdminCommandesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/parametres': typeof AdminParametresRoute
+  '/admin/produits': typeof AdminProduitsRoute
+  '/admin/reprises': typeof AdminReprisesRoute
+  '/admin/reservations': typeof AdminReservationsRoute
   '/commande/$trackingToken': typeof CommandeTrackingTokenRoute
   '/produits/$productId': typeof ProduitsProductIdRoute
   '/reservation/$productId': typeof ReservationProductIdRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/a-propos': typeof AProposRoute
+  '/admin': typeof AdminRouteWithChildren
   '/catalogue': typeof CatalogueRoute
   '/cgv': typeof CgvRoute
   '/checkout': typeof CheckoutRoute
@@ -140,15 +204,23 @@ export interface FileRoutesById {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/panier': typeof PanierRoute
   '/reprise': typeof RepriseRoute
+  '/admin/commandes': typeof AdminCommandesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/parametres': typeof AdminParametresRoute
+  '/admin/produits': typeof AdminProduitsRoute
+  '/admin/reprises': typeof AdminReprisesRoute
+  '/admin/reservations': typeof AdminReservationsRoute
   '/commande/$trackingToken': typeof CommandeTrackingTokenRoute
   '/produits/$productId': typeof ProduitsProductIdRoute
   '/reservation/$productId': typeof ReservationProductIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/a-propos'
+    | '/admin'
     | '/catalogue'
     | '/cgv'
     | '/checkout'
@@ -158,9 +230,16 @@ export interface FileRouteTypes {
     | '/mentions-legales'
     | '/panier'
     | '/reprise'
+    | '/admin/commandes'
+    | '/admin/dashboard'
+    | '/admin/parametres'
+    | '/admin/produits'
+    | '/admin/reprises'
+    | '/admin/reservations'
     | '/commande/$trackingToken'
     | '/produits/$productId'
     | '/reservation/$productId'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -174,13 +253,21 @@ export interface FileRouteTypes {
     | '/mentions-legales'
     | '/panier'
     | '/reprise'
+    | '/admin/commandes'
+    | '/admin/dashboard'
+    | '/admin/parametres'
+    | '/admin/produits'
+    | '/admin/reprises'
+    | '/admin/reservations'
     | '/commande/$trackingToken'
     | '/produits/$productId'
     | '/reservation/$productId'
+    | '/admin'
   id:
     | '__root__'
     | '/'
     | '/a-propos'
+    | '/admin'
     | '/catalogue'
     | '/cgv'
     | '/checkout'
@@ -190,14 +277,22 @@ export interface FileRouteTypes {
     | '/mentions-legales'
     | '/panier'
     | '/reprise'
+    | '/admin/commandes'
+    | '/admin/dashboard'
+    | '/admin/parametres'
+    | '/admin/produits'
+    | '/admin/reprises'
+    | '/admin/reservations'
     | '/commande/$trackingToken'
     | '/produits/$productId'
     | '/reservation/$productId'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AProposRoute: typeof AProposRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CatalogueRoute: typeof CatalogueRoute
   CgvRoute: typeof CgvRoute
   CheckoutRoute: typeof CheckoutRoute
@@ -226,6 +321,13 @@ declare module '@tanstack/react-router' {
       path: '/a-propos'
       fullPath: '/a-propos'
       preLoaderRoute: typeof AProposRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/catalogue': {
@@ -291,6 +393,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RepriseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/commandes': {
+      id: '/admin/commandes'
+      path: '/commandes'
+      fullPath: '/admin/commandes'
+      preLoaderRoute: typeof AdminCommandesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/parametres': {
+      id: '/admin/parametres'
+      path: '/parametres'
+      fullPath: '/admin/parametres'
+      preLoaderRoute: typeof AdminParametresRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/produits': {
+      id: '/admin/produits'
+      path: '/produits'
+      fullPath: '/admin/produits'
+      preLoaderRoute: typeof AdminProduitsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reprises': {
+      id: '/admin/reprises'
+      path: '/reprises'
+      fullPath: '/admin/reprises'
+      preLoaderRoute: typeof AdminReprisesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reservations': {
+      id: '/admin/reservations'
+      path: '/reservations'
+      fullPath: '/admin/reservations'
+      preLoaderRoute: typeof AdminReservationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/commande/$trackingToken': {
       id: '/commande/$trackingToken'
       path: '/commande/$trackingToken'
@@ -315,9 +466,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminCommandesRoute: typeof AdminCommandesRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminParametresRoute: typeof AdminParametresRoute
+  AdminProduitsRoute: typeof AdminProduitsRoute
+  AdminReprisesRoute: typeof AdminReprisesRoute
+  AdminReservationsRoute: typeof AdminReservationsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCommandesRoute: AdminCommandesRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
+  AdminParametresRoute: AdminParametresRoute,
+  AdminProduitsRoute: AdminProduitsRoute,
+  AdminReprisesRoute: AdminReprisesRoute,
+  AdminReservationsRoute: AdminReservationsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AProposRoute: AProposRoute,
+  AdminRoute: AdminRouteWithChildren,
   CatalogueRoute: CatalogueRoute,
   CgvRoute: CgvRoute,
   CheckoutRoute: CheckoutRoute,
