@@ -1,3 +1,4 @@
+@import "@fontsource-variable/outfit";
 @import "tailwindcss";
 
 @theme {
@@ -34,6 +35,9 @@
 
   --color-destructive: #c51f2a;
 
+  /* Typography */
+  --font-sans: "Outfit Variable", sans-serif;
+
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.625rem;
@@ -48,6 +52,7 @@
   html {
     background: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
   }
 
   body {
@@ -55,8 +60,23 @@
     min-height: 100vh;
     background: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-weight: 300;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 500;
+  }
+
+  p {
+    line-height: 1.55;
   }
 
   ::selection {
@@ -67,5 +87,66 @@
   :focus-visible {
     outline: 2px solid var(--color-brand-red);
     outline-offset: 2px;
+  }
+}
+
+
+@layer components {
+  .type-display {
+    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    font-weight: 500;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+  }
+
+  .type-heading-2 {
+    font-size: clamp(2.125rem, 3.5vw, 2.5rem);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+
+  .type-heading-3 {
+    font-size: clamp(1.625rem, 2.5vw, 1.875rem);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+
+  .type-product-title {
+    font-size: clamp(1.25rem, 2vw, 1.375rem);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .type-price {
+    font-size: clamp(1.75rem, 2.5vw, 2rem);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .type-body {
+    font-size: clamp(1rem, 1.5vw, 1.0625rem);
+    font-weight: 300;
+    line-height: 1.55;
+  }
+
+  .type-secondary {
+    font-size: clamp(0.875rem, 1.2vw, 0.9375rem);
+    font-weight: 300;
+    line-height: 1.45;
+  }
+
+  .type-label {
+    font-size: clamp(0.8125rem, 1vw, 0.875rem);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .type-button {
+    font-size: clamp(0.875rem, 1vw, 0.9375rem);
+    font-weight: 500;
+    line-height: 1.2;
   }
 }
