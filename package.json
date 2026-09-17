@@ -1,0 +1,20 @@
+{
+  "name": "flos-bikes",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "install:apps": "npm ci --prefix frontend && npm ci --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "build": "npm run build --prefix frontend && npm run build --prefix backend",
+    "lint": "npm run lint --prefix frontend && npm run lint --prefix backend",
+    "format:check": "npm run format:check --prefix frontend && npm run format:check --prefix backend",
+    "dev": "concurrently -k -n frontend,backend \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "start:frontend": "npm run start --prefix frontend",
+    "start:backend": "npm run start --prefix backend",
+    "install:all": "npm ci && npm ci --prefix frontend && npm ci --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
