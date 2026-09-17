@@ -5,10 +5,13 @@ import {
   closeDatabaseConnection,
 } from './config/database.js'
 import { env } from './config/env.js'
+import { logger } from './config/logger.js'
 import { errorHandler } from './http/error-handler.js'
+import { requestLogger } from './http/request-logger.js'
 
 const app = express()
 
+app.use(requestLogger)
 app.use(express.json())
 
 app.get('/health', (_req, res) => {
@@ -24,15 +27,15 @@ app.use(errorHandler)
 async function startServer() {
   try {
     await checkDatabaseConnection()
-    console.log('PostgreSQL connection established')
+    logger.info('PostgreSQL connection established')
   } catch (error) {
-    console.error('Unable to connect to PostgreSQL', error)
+    logger.error({ err: error }, 'Unable to connect to PostgreSQL')
     await closeDatabaseConnection().catch(() => undefined)
     process.exit(1)
   }
 
   const server = app.listen(env.PORT, '127.0.0.1', () => {
-    console.log(`Flos Bikes backend listening on http://127.0.0.1:${env.PORT}`)
+    logger.info({ port: env.PORT }, 'Flos Bikes backend listening')
   })
 
   let shuttingDown = false
@@ -41,13 +44,13 @@ async function startServer() {
     if (shuttingDown) return
     shuttingDown = true
 
-    console.log(`${signal} received, shutting down`)
+    logger.info({ signal }, 'Shutdown signal received')
 
     server.close(async (error) => {
       await closeDatabaseConnection()
 
       if (error) {
-        console.error('HTTP server shutdown failed', error)
+        logger.error({ err: error }, 'HTTP server shutdown failed')
         process.exit(1)
       }
 

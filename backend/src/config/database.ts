@@ -1,13 +1,14 @@
 import { Pool } from 'pg'
 
 import { env } from './env.js'
+import { logger } from './logger.js'
 
 export const db = new Pool({
   connectionString: env.DATABASE_URL,
 })
 
 db.on('error', (error) => {
-  console.error('Unexpected PostgreSQL pool error', error)
+  logger.error({ err: error }, 'Unexpected PostgreSQL pool error')
 })
 
 export async function checkDatabaseConnection() {
