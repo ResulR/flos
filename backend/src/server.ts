@@ -5,6 +5,7 @@ import {
   closeDatabaseConnection,
 } from './config/database.js'
 import { env } from './config/env.js'
+import { errorHandler } from './http/error-handler.js'
 
 const app = express()
 
@@ -17,6 +18,8 @@ app.get('/health', (_req, res) => {
     },
   })
 })
+
+app.use(errorHandler)
 
 async function startServer() {
   try {

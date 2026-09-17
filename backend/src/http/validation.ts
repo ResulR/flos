@@ -1,6 +1,8 @@
 import type { RequestHandler } from 'express'
 import type { ZodIssue, ZodType } from 'zod'
 
+import { AppError } from './errors.js'
+
 type ValidationSchemas = {
   body?: ZodType
   params?: ZodType
@@ -67,13 +69,7 @@ export function validateRequest(
     }
 
     if (Object.keys(fields).length > 0) {
-      res.status(400).json({
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'Requête invalide',
-          fields,
-        },
-      })
+      next(new AppError(400, 'VALIDATION_ERROR', 'Requête invalide', fields))
 
       return
     }
