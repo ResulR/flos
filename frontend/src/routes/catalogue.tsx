@@ -1,60 +1,67 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Search, SlidersHorizontal } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import { ProductCard } from '@/components/catalogue/product-card'
+import { FlowState } from '@/components/feedback/flow-state'
 import { PublicPage } from '@/components/layout/public-page'
+import { apiRequest } from '@/lib/api'
 
 export const Route = createFileRoute('/catalogue')({
   component: CataloguePage,
 })
 
-const previewProducts = [
-  {
-    brand: 'Marque',
-    model: 'Modèle du vélo',
-    priceLabel: 'Prix',
-    condition: 'Très bon état',
-    status: 'available' as const,
-  },
-  {
-    brand: 'Marque',
-    model: 'Modèle du vélo',
-    priceLabel: 'Prix',
-    condition: 'Bon état',
-    status: 'reserved' as const,
-    reservedUntil: '18/09',
-  },
-  {
-    brand: 'Marque',
-    model: 'Modèle du vélo',
-    priceLabel: 'Prix',
-    condition: 'Très bon état',
-    status: 'available' as const,
-  },
-  {
-    brand: 'Marque',
-    model: 'Modèle du vélo',
-    priceLabel: 'Prix',
-    condition: 'Bon état',
-    status: 'available' as const,
-  },
-  {
-    brand: 'Marque',
-    model: 'Modèle du vélo',
-    priceLabel: 'Prix',
-    condition: 'Très bon état',
-    status: 'sold' as const,
-  },
-  {
-    brand: 'Marque',
-    model: 'Modèle du vélo',
-    priceLabel: 'Prix',
-    condition: 'Bon état',
-    status: 'available' as const,
-  },
-]
+type CatalogueProduct = {
+  id: string
+  brand: string
+  model: string
+  priceCents: string
+  condition: string
+  status: 'available' | 'reserved' | 'sold'
+  imageUrl: string | null
+}
+
+function formatPrice(priceCents: string) {
+  return new Intl.NumberFormat('fr-BE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(Number(priceCents) / 100)
+}
 
 function CataloguePage() {
+  const [products, setProducts] = useState<CatalogueProduct[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadProducts() {
+      try {
+        const data = await apiRequest<CatalogueProduct[]>('/products')
+
+        if (!cancelled) {
+          setProducts(data)
+          setError(null)
+        }
+      } catch {
+        if (!cancelled) {
+          setError('Impossible de charger le catalogue pour le moment.')
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadProducts()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <PublicPage>
       <section className="border-b border-border bg-brand-gray-50">
@@ -133,20 +140,40 @@ function CataloguePage() {
               </label>
             </div>
 
-            <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
-              {previewProducts.map((product, index) => (
-                <ProductCard
-                  key={index}
-                  href={`/produits/exemple-${index + 1}`}
-                  brand={product.brand}
-                  model={product.model}
-                  priceLabel={product.priceLabel}
-                  condition={product.condition}
-                  status={product.status}
-                  reservedUntil={product.reservedUntil}
-                />
-              ))}
-            </div>
+            {isLoading ? (
+              <FlowState
+                kind="loading"
+                title="Chargement du catalogue"
+                description="Les vélos disponibles sont en cours de chargement."
+              />
+            ) : error ? (
+              <FlowState
+                kind="error"
+                title="Catalogue indisponible"
+                description={error}
+              />
+            ) : products.length === 0 ? (
+              <FlowState
+                kind="empty"
+                title="Aucun vélo pour le moment"
+                description="Le catalogue ne contient actuellement aucun vélo à afficher."
+              />
+            ) : (
+              <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    href={`/produits/${product.id}`}
+                    imageSrc={product.imageUrl}
+                    brand={product.brand}
+                    model={product.model}
+                    priceLabel={formatPrice(product.priceCents)}
+                    condition={product.condition}
+                    status={product.status}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
