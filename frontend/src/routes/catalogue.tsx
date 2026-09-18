@@ -56,6 +56,9 @@ function CataloguePage() {
   const [availability, setAvailability] = useState('')
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
+  const [sort, setSort] = useState<'recent' | 'price_asc' | 'price_desc'>(
+    'recent',
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -118,6 +121,7 @@ function CataloguePage() {
       if (conditionId) params.set('conditionId', conditionId)
       if (year) params.set('year', year)
       if (availability) params.set('availability', availability)
+      params.set('sort', sort)
 
       if (minPrice) {
         params.set('minPriceCents', String(Math.round(Number(minPrice) * 100)))
@@ -152,7 +156,16 @@ function CataloguePage() {
     return () => {
       cancelled = true
     }
-  }, [brandId, bikeTypeId, conditionId, year, availability, minPrice, maxPrice])
+  }, [
+    brandId,
+    bikeTypeId,
+    conditionId,
+    year,
+    availability,
+    minPrice,
+    maxPrice,
+    sort,
+  ])
 
   return (
     <PublicPage>
@@ -260,10 +273,19 @@ function CataloguePage() {
                 <span className="type-secondary text-muted-foreground">
                   Trier par
                 </span>
-                <select className="form-control min-h-10">
-                  <option>Plus récents</option>
-                  <option>Prix croissant</option>
-                  <option>Prix décroissant</option>
+                <select
+                  className="form-control min-h-10"
+                  value={sort}
+                  onChange={(event) =>
+                    setSort(
+                      event.target.value as
+                        'recent' | 'price_asc' | 'price_desc',
+                    )
+                  }
+                >
+                  <option value="recent">Plus récents</option>
+                  <option value="price_asc">Prix croissant</option>
+                  <option value="price_desc">Prix décroissant</option>
                 </select>
               </label>
             </div>
