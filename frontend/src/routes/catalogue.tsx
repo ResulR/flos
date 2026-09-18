@@ -3,6 +3,7 @@ import { Search, SlidersHorizontal } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import { ProductCard } from '@/components/catalogue/product-card'
+import { Button } from '@/components/ui/button'
 import { FlowState } from '@/components/feedback/flow-state'
 import { PublicPage } from '@/components/layout/public-page'
 import { apiRequest } from '@/lib/api'
@@ -21,6 +22,18 @@ type CatalogueProduct = {
   imageUrl: string | null
 }
 
+type FilterOption = {
+  id: string
+  name: string
+}
+
+type CatalogueFilterOptions = {
+  brands: FilterOption[]
+  bikeTypes: FilterOption[]
+  conditions: FilterOption[]
+  years: number[]
+}
+
 function formatPrice(priceCents: string) {
   return new Intl.NumberFormat('fr-BE', {
     style: 'currency',
@@ -30,19 +43,98 @@ function formatPrice(priceCents: string) {
 
 function CataloguePage() {
   const [products, setProducts] = useState<CatalogueProduct[]>([])
+  const [filterOptions, setFilterOptions] = useState<CatalogueFilterOptions>({
+    brands: [],
+    bikeTypes: [],
+    conditions: [],
+    years: [],
+  })
+  const [brandId, setBrandId] = useState('')
+  const [bikeTypeId, setBikeTypeId] = useState('')
+  const [conditionId, setConditionId] = useState('')
+  const [year, setYear] = useState('')
+  const [availability, setAvailability] = useState('')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const hasActiveFilters = Boolean(
+    brandId ||
+    bikeTypeId ||
+    conditionId ||
+    year ||
+    availability ||
+    minPrice ||
+    maxPrice,
+  )
+
+  function resetFilters() {
+    setBrandId('')
+    setBikeTypeId('')
+    setConditionId('')
+    setYear('')
+    setAvailability('')
+    setMinPrice('')
+    setMaxPrice('')
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadFilterOptions() {
+      try {
+        const options =
+          await apiRequest<CatalogueFilterOptions>('/products/filters')
+
+        if (!cancelled) {
+          setFilterOptions(options)
+        }
+      } catch {
+        if (!cancelled) {
+          setError('Impossible de charger les filtres du catalogue.')
+        }
+      }
+    }
+
+    void loadFilterOptions()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
 
     async function loadProducts() {
+      setIsLoading(true)
+      setError(null)
+
+      const params = new URLSearchParams()
+
+      if (brandId) params.set('brandId', brandId)
+      if (bikeTypeId) params.set('bikeTypeId', bikeTypeId)
+      if (conditionId) params.set('conditionId', conditionId)
+      if (year) params.set('year', year)
+      if (availability) params.set('availability', availability)
+
+      if (minPrice) {
+        params.set('minPriceCents', String(Math.round(Number(minPrice) * 100)))
+      }
+
+      if (maxPrice) {
+        params.set('maxPriceCents', String(Math.round(Number(maxPrice) * 100)))
+      }
+
+      const query = params.toString()
+      const path = query ? `/products?${query}` : '/products'
+
       try {
-        const data = await apiRequest<CatalogueProduct[]>('/products')
+        const data = await apiRequest<CatalogueProduct[]>(path)
 
         if (!cancelled) {
           setProducts(data)
-          setError(null)
         }
       } catch {
         if (!cancelled) {
@@ -60,7 +152,7 @@ function CataloguePage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [brandId, bikeTypeId, conditionId, year, availability, minPrice, maxPrice])
 
   return (
     <PublicPage>
@@ -107,7 +199,25 @@ function CataloguePage() {
             </summary>
 
             <div className="border-t border-border p-4">
-              <Filters />
+              <Filters
+                options={filterOptions}
+                brandId={brandId}
+                bikeTypeId={bikeTypeId}
+                conditionId={conditionId}
+                year={year}
+                availability={availability}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                onBrandChange={setBrandId}
+                onBikeTypeChange={setBikeTypeId}
+                onConditionChange={setConditionId}
+                onYearChange={setYear}
+                onAvailabilityChange={setAvailability}
+                onMinPriceChange={setMinPrice}
+                onMaxPriceChange={setMaxPrice}
+                hasActiveFilters={hasActiveFilters}
+                onReset={resetFilters}
+              />
             </div>
           </details>
         </div>
@@ -118,7 +228,25 @@ function CataloguePage() {
               <p className="type-label mb-5 uppercase tracking-[0.12em]">
                 Filtres
               </p>
-              <Filters />
+              <Filters
+                options={filterOptions}
+                brandId={brandId}
+                bikeTypeId={bikeTypeId}
+                conditionId={conditionId}
+                year={year}
+                availability={availability}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                onBrandChange={setBrandId}
+                onBikeTypeChange={setBikeTypeId}
+                onConditionChange={setConditionId}
+                onYearChange={setYear}
+                onAvailabilityChange={setAvailability}
+                onMinPriceChange={setMinPrice}
+                onMaxPriceChange={setMaxPrice}
+                hasActiveFilters={hasActiveFilters}
+                onReset={resetFilters}
+              />
             </div>
           </aside>
 
@@ -155,8 +283,16 @@ function CataloguePage() {
             ) : products.length === 0 ? (
               <FlowState
                 kind="empty"
-                title="Aucun vélo pour le moment"
-                description="Le catalogue ne contient actuellement aucun vélo à afficher."
+                title={
+                  hasActiveFilters
+                    ? 'Aucun résultat pour ces filtres'
+                    : 'Aucun vélo pour le moment'
+                }
+                description={
+                  hasActiveFilters
+                    ? 'Aucun vélo ne correspond actuellement aux critères sélectionnés.'
+                    : 'Le catalogue ne contient actuellement aucun vélo à afficher.'
+                }
               />
             ) : (
               <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
@@ -181,16 +317,90 @@ function CataloguePage() {
   )
 }
 
-function Filters() {
+function Filters({
+  options,
+  brandId,
+  bikeTypeId,
+  conditionId,
+  year,
+  availability,
+  minPrice,
+  maxPrice,
+  onBrandChange,
+  onBikeTypeChange,
+  onConditionChange,
+  onYearChange,
+  onAvailabilityChange,
+  onMinPriceChange,
+  onMaxPriceChange,
+  hasActiveFilters,
+  onReset,
+}: {
+  options: CatalogueFilterOptions
+  brandId: string
+  bikeTypeId: string
+  conditionId: string
+  year: string
+  availability: string
+  minPrice: string
+  maxPrice: string
+  onBrandChange: (value: string) => void
+  onBikeTypeChange: (value: string) => void
+  onConditionChange: (value: string) => void
+  onYearChange: (value: string) => void
+  onAvailabilityChange: (value: string) => void
+  onMinPriceChange: (value: string) => void
+  onMaxPriceChange: (value: string) => void
+  hasActiveFilters: boolean
+  onReset: () => void
+}) {
   return (
     <div className="space-y-6">
-      <FilterSelect label="Marque" options={['Toutes les marques']} />
-      <FilterSelect label="Type" options={['Tous les types']} />
-      <FilterSelect label="État" options={['Tous les états']} />
-      <FilterSelect label="Année" options={['Toutes les années']} />
+      <FilterSelect
+        label="Marque"
+        value={brandId}
+        onChange={onBrandChange}
+        emptyLabel="Toutes les marques"
+        options={options.brands}
+      />
+
+      <FilterSelect
+        label="Type"
+        value={bikeTypeId}
+        onChange={onBikeTypeChange}
+        emptyLabel="Tous les types"
+        options={options.bikeTypes}
+      />
+
+      <FilterSelect
+        label="État"
+        value={conditionId}
+        onChange={onConditionChange}
+        emptyLabel="Tous les états"
+        options={options.conditions}
+      />
+
+      <FilterSelect
+        label="Année"
+        value={year}
+        onChange={onYearChange}
+        emptyLabel="Toutes les années"
+        options={options.years.map((item) => ({
+          id: String(item),
+          name: String(item),
+        }))}
+      />
+
       <FilterSelect
         label="Disponibilité"
-        options={['Tous', 'Disponible', 'Réservé']}
+        value={availability}
+        onChange={onAvailabilityChange}
+        emptyLabel="Tous"
+        options={[
+          { id: 'available', name: 'Disponible' },
+          { id: 'reserved', name: 'Réservé' },
+          { id: 'sold', name: 'Vendu' },
+        ]}
       />
 
       <fieldset>
@@ -199,38 +409,70 @@ function Filters() {
         <div className="grid grid-cols-2 gap-2">
           <input
             type="number"
+            min="0"
             inputMode="numeric"
             placeholder="Min."
             aria-label="Prix minimum"
+            value={minPrice}
+            onChange={(event) => onMinPriceChange(event.target.value)}
             className="form-control w-full"
           />
           <input
             type="number"
+            min="0"
             inputMode="numeric"
             placeholder="Max."
             aria-label="Prix maximum"
+            value={maxPrice}
+            onChange={(event) => onMaxPriceChange(event.target.value)}
             className="form-control w-full"
           />
         </div>
       </fieldset>
+
+      {hasActiveFilters ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="w-full"
+          onClick={onReset}
+        >
+          Réinitialiser les filtres
+        </Button>
+      ) : null}
     </div>
   )
 }
 
 function FilterSelect({
   label,
+  value,
+  onChange,
+  emptyLabel,
   options,
 }: {
   label: string
-  options: string[]
+  value: string
+  onChange: (value: string) => void
+  emptyLabel: string
+  options: FilterOption[]
 }) {
   return (
     <label className="block">
       <span className="type-label mb-2 block">{label}</span>
 
-      <select className="form-control w-full">
+      <select
+        className="form-control w-full"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        <option value="">{emptyLabel}</option>
+
         {options.map((option) => (
-          <option key={option}>{option}</option>
+          <option key={option.id} value={option.id}>
+            {option.name}
+          </option>
         ))}
       </select>
     </label>

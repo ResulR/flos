@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { validateRequest } from '../../http/validation.js'
 import {
   getPublicProductById,
+  getPublicProductFilters,
   getPublicProductMedia,
   getPublicProducts,
 } from './products.controller.js'
@@ -19,6 +20,8 @@ productsRouter.get(
   validateRequest({ query: publicProductFiltersSchema }),
   getPublicProducts,
 )
+
+productsRouter.get('/filters', getPublicProductFilters)
 
 productsRouter.get(
   '/:productId/media/:mediaId',

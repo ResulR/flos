@@ -8,6 +8,7 @@ import type {
 } from './products.schemas.js'
 import {
   getPublicProduct,
+  getPublicProductFilterOptions,
   getPublicProductMediaFile,
   listPublicProducts,
 } from './products.service.js'
@@ -55,4 +56,12 @@ export const getPublicProductMedia: RequestHandler<
   const media = await getPublicProductMediaFile(productId, mediaId)
 
   res.sendFile(media.absolutePath)
+}
+
+export const getPublicProductFilters: RequestHandler = async (_req, res) => {
+  const filters = await getPublicProductFilterOptions()
+
+  res.status(200).json({
+    data: filters,
+  })
 }

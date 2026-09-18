@@ -225,3 +225,55 @@ export async function findPublicProductMediaById(
 
   return result.rows[0] ?? null
 }
+
+export type PublicProductFilterOptionRow = {
+  id: string
+  name: string
+}
+
+export async function findPublicProductFilterOptions() {
+  const [brands, bikeTypes, conditions, years] = await Promise.all([
+    db.query<PublicProductFilterOptionRow>(
+      `
+        SELECT id::text AS id, name
+        FROM product_brands
+        WHERE is_active = true
+        ORDER BY display_order ASC, name ASC, id ASC
+      `,
+    ),
+    db.query<PublicProductFilterOptionRow>(
+      `
+        SELECT id::text AS id, name
+        FROM bike_types
+        WHERE is_active = true
+        ORDER BY display_order ASC, name ASC, id ASC
+      `,
+    ),
+    db.query<PublicProductFilterOptionRow>(
+      `
+        SELECT id::text AS id, name
+        FROM bike_conditions
+        WHERE is_active = true
+        ORDER BY display_order ASC, name ASC, id ASC
+      `,
+    ),
+    db.query<{ year: number }>(
+      `
+        SELECT DISTINCT year
+        FROM products
+        WHERE is_active = true
+          AND deleted_at IS NULL
+          AND status IN ('available', 'reserved', 'sold')
+          AND year IS NOT NULL
+        ORDER BY year DESC
+      `,
+    ),
+  ])
+
+  return {
+    brands: brands.rows,
+    bikeTypes: bikeTypes.rows,
+    conditions: conditions.rows,
+    years: years.rows.map((row) => row.year),
+  }
+}

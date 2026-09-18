@@ -5,6 +5,7 @@ import { env } from '../../config/env.js'
 import { AppError } from '../../http/errors.js'
 import {
   findPublicProductById,
+  findPublicProductFilterOptions,
   findPublicProductMedia,
   findPublicProductMediaById,
   findPublicProductSpecs,
@@ -143,4 +144,8 @@ export async function getPublicProductMediaFile(
   return {
     absolutePath,
   }
+}
+
+export async function getPublicProductFilterOptions() {
+  return findPublicProductFilterOptions()
 }
