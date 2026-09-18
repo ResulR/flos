@@ -37,16 +37,27 @@ function AboutPage() {
         <div className="grid gap-12 lg:grid-cols-2">
           <div>
             <p className="type-label uppercase tracking-[0.12em] text-primary">
-              Flo&apos;s Bikes
+              Notre approche
             </p>
-            <h2 className="type-heading-2 mt-3">Une histoire à compléter.</h2>
+
+            <h2 className="type-heading-2 mt-3">
+              Aller à l’essentiel, sans compliquer l’expérience.
+            </h2>
           </div>
 
-          <p className="type-body text-muted-foreground">
-            Le contenu réel sur l’histoire du magasin, son fondateur et son
-            positionnement sera ajouté à partir des informations fournies par le
-            propriétaire. Aucun élément biographique n’est inventé ici.
-          </p>
+          <div className="space-y-5">
+            <p className="type-body text-muted-foreground">
+              Flo&apos;s Bikes se concentre sur une sélection de vélos
+              d’occasion présentés avec des informations claires pour faciliter
+              la comparaison et la prise de décision.
+            </p>
+
+            <p className="type-body text-muted-foreground">
+              L’objectif est de proposer un parcours simple, aussi bien pour
+              acheter un vélo que pour demander une reprise, avec un contact
+              direct lorsque c’est nécessaire.
+            </p>
+          </div>
         </div>
       </section>
     </PublicPage>
