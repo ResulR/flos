@@ -2,6 +2,7 @@ import {
   findPublicProducts,
   type PublicProductRow,
 } from './products.repository.js'
+import type { PublicProductFilters } from './products.schemas.js'
 
 export type PublicProductListItem = {
   id: string
@@ -25,8 +26,10 @@ function toPublicProductListItem(row: PublicProductRow): PublicProductListItem {
   }
 }
 
-export async function listPublicProducts(): Promise<PublicProductListItem[]> {
-  const products = await findPublicProducts()
+export async function listPublicProducts(
+  filters: PublicProductFilters,
+): Promise<PublicProductListItem[]> {
+  const products = await findPublicProducts(filters)
 
   return products.map(toPublicProductListItem)
 }

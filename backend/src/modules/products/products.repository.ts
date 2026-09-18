@@ -1,4 +1,5 @@
 import { db } from '../../config/database.js'
+import type { PublicProductFilters } from './products.schemas.js'
 
 export type PublicProductRow = {
   id: string
@@ -9,25 +10,69 @@ export type PublicProductRow = {
   status: 'available' | 'reserved' | 'sold'
 }
 
-export async function findPublicProducts(): Promise<PublicProductRow[]> {
-  const result = await db.query<PublicProductRow>(`
-    SELECT
-      p.id::text AS id,
-      brand.name AS brand,
-      p.model,
-      p.price_cents::text AS price_cents,
-      condition.name AS condition,
-      p.status
-    FROM products AS p
-    INNER JOIN product_brands AS brand
-      ON brand.id = p.brand_id
-    INNER JOIN bike_conditions AS condition
-      ON condition.id = p.condition_id
-    WHERE p.is_active = true
-      AND p.deleted_at IS NULL
-      AND p.status IN ('available', 'reserved', 'sold')
-    ORDER BY p.created_at DESC, p.id DESC
-  `)
+export async function findPublicProducts(
+  filters: PublicProductFilters,
+): Promise<PublicProductRow[]> {
+  const conditions = [
+    'p.is_active = true',
+    'p.deleted_at IS NULL',
+    "p.status IN ('available', 'reserved', 'sold')",
+  ]
+
+  const values: Array<string | number> = []
+
+  function addCondition(sql: string, value: string | number) {
+    values.push(value)
+    conditions.push(sql.replace('?', `$${values.length}`))
+  }
+
+  if (filters.brandId !== undefined) {
+    addCondition('p.brand_id = ?::bigint', filters.brandId)
+  }
+
+  if (filters.bikeTypeId !== undefined) {
+    addCondition('p.bike_type_id = ?::bigint', filters.bikeTypeId)
+  }
+
+  if (filters.conditionId !== undefined) {
+    addCondition('p.condition_id = ?::bigint', filters.conditionId)
+  }
+
+  if (filters.year !== undefined) {
+    addCondition('p.year = ?', filters.year)
+  }
+
+  if (filters.minPriceCents !== undefined) {
+    addCondition('p.price_cents >= ?::bigint', filters.minPriceCents)
+  }
+
+  if (filters.maxPriceCents !== undefined) {
+    addCondition('p.price_cents <= ?::bigint', filters.maxPriceCents)
+  }
+
+  if (filters.availability !== undefined) {
+    addCondition('p.status = ?', filters.availability)
+  }
+
+  const result = await db.query<PublicProductRow>(
+    `
+      SELECT
+        p.id::text AS id,
+        brand.name AS brand,
+        p.model,
+        p.price_cents::text AS price_cents,
+        condition.name AS condition,
+        p.status
+      FROM products AS p
+      INNER JOIN product_brands AS brand
+        ON brand.id = p.brand_id
+      INNER JOIN bike_conditions AS condition
+        ON condition.id = p.condition_id
+      WHERE ${conditions.join('\n        AND ')}
+      ORDER BY p.created_at DESC, p.id DESC
+    `,
+    values,
+  )
 
   return result.rows
 }
