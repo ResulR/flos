@@ -8,6 +8,7 @@ import { env } from './config/env.js'
 import { logger } from './config/logger.js'
 import { errorHandler } from './http/error-handler.js'
 import { requestLogger } from './http/request-logger.js'
+import { productsRouter } from './modules/products/products.routes.js'
 
 const app = express()
 
@@ -21,6 +22,8 @@ app.get('/health', (_req, res) => {
     },
   })
 })
+
+app.use('/products', productsRouter)
 
 app.use(errorHandler)
 
