@@ -1,11 +1,66 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 import { ArrowRight, BadgeCheck, Bike, RefreshCcw } from 'lucide-react'
 
+import { ProductCard } from '@/components/catalogue/product-card'
+import { FlowState } from '@/components/feedback/flow-state'
 import { PublicPage } from '@/components/layout/public-page'
+import { apiRequest } from '@/lib/api'
 
 export const Route = createFileRoute('/')({ component: Home })
 
+type HomeProduct = {
+  id: string
+  brand: string
+  model: string
+  priceCents: string
+  condition: string
+  status: 'available' | 'reserved' | 'sold'
+  imageUrl: string | null
+}
+
+function formatPrice(priceCents: string) {
+  return new Intl.NumberFormat('fr-BE', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(Number(priceCents) / 100)
+}
+
 function Home() {
+  const [products, setProducts] = useState<HomeProduct[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadProducts() {
+      try {
+        const data = await apiRequest<HomeProduct[]>(
+          '/products?availability=available&sort=recent',
+        )
+
+        if (!cancelled) {
+          setProducts(data.slice(0, 3))
+        }
+      } catch {
+        if (!cancelled) {
+          setError('Impossible de charger la sélection de vélos.')
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadProducts()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <PublicPage>
       <section className="overflow-hidden bg-brand-black text-brand-white">
@@ -81,21 +136,41 @@ function Home() {
             </a>
           </div>
 
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((item) => (
-              <div
-                key={item}
-                className="surface-card overflow-hidden"
-                aria-hidden="true"
-              >
-                <div className="aspect-[4/3] bg-brand-gray-100" />
-                <div className="space-y-3 p-5">
-                  <div className="h-4 w-20 rounded bg-brand-gray-100" />
-                  <div className="h-6 w-2/3 rounded bg-brand-gray-100" />
-                  <div className="h-7 w-24 rounded bg-brand-gray-100" />
-                </div>
+          <div className="mt-8">
+            {isLoading ? (
+              <FlowState
+                kind="loading"
+                title="Chargement de la sélection"
+                description="Les vélos disponibles sont en cours de chargement."
+              />
+            ) : error ? (
+              <FlowState
+                kind="error"
+                title="Sélection indisponible"
+                description={error}
+              />
+            ) : products.length === 0 ? (
+              <FlowState
+                kind="empty"
+                title="Aucun vélo disponible pour le moment"
+                description="De nouveaux vélos seront ajoutés au catalogue dès qu’ils seront disponibles."
+              />
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    href={`/produits/${product.id}`}
+                    imageSrc={product.imageUrl}
+                    brand={product.brand}
+                    model={product.model}
+                    priceLabel={formatPrice(product.priceCents)}
+                    condition={product.condition}
+                    status={product.status}
+                  />
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
