@@ -11,15 +11,38 @@ function LegalNoticePage() {
     <LegalPage eyebrow="Informations légales" title="Mentions légales">
       <LegalSection title="Éditeur du site">
         <p>
-          Les informations juridiques réelles de l’entreprise seront insérées
-          ici avant la mise en production.
+          Le site Flo&apos;s Bikes présente et commercialise des vélos
+          d’occasion.
+        </p>
+
+        <p>
+          <strong>À compléter avant production :</strong> dénomination ou nom
+          légal de l’éditeur, forme juridique, numéro d’entreprise, numéro de
+          TVA le cas échéant, siège ou adresse légale et représentant
+          responsable.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="Coordonnées">
+        <p>
+          Les coordonnées de contact publiques de Flo&apos;s Bikes sont
+          administrées depuis les paramètres du site et sont affichées sur la
+          page Contact lorsqu’elles sont configurées.
         </p>
       </LegalSection>
 
       <LegalSection title="Hébergement">
         <p>
-          Les informations relatives à l’hébergeur seront complétées à partir
-          des données réelles du projet.
+          <strong>À compléter avant production :</strong> identité légale,
+          adresse et coordonnées requises de l’hébergeur du service.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="Responsabilité et propriété intellectuelle">
+        <p>
+          <strong>À compléter avant production :</strong> mentions relatives à
+          la responsabilité de l’éditeur, aux contenus du site, aux marques,
+          photographies et autres éléments protégés.
         </p>
       </LegalSection>
     </LegalPage>
