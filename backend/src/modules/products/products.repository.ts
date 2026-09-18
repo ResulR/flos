@@ -21,9 +21,18 @@ export async function findPublicProducts(
 
   const values: Array<string | number> = []
 
-  function addCondition(sql: string, value: string | number) {
-    values.push(value)
-    conditions.push(sql.replace('?', `$${values.length}`))
+  function addCondition(
+    sql: string,
+    ...conditionValues: Array<string | number>
+  ) {
+    let parameterizedSql = sql
+
+    for (const value of conditionValues) {
+      values.push(value)
+      parameterizedSql = parameterizedSql.replace('?', `$${values.length}`)
+    }
+
+    conditions.push(parameterizedSql)
   }
 
   if (filters.brandId !== undefined) {
@@ -52,6 +61,12 @@ export async function findPublicProducts(
 
   if (filters.availability !== undefined) {
     addCondition('p.status = ?', filters.availability)
+  }
+
+  if (filters.search !== undefined) {
+    const pattern = `%${filters.search}%`
+
+    addCondition('(brand.name ILIKE ? OR p.model ILIKE ?)', pattern, pattern)
   }
 
   const orderBy = {

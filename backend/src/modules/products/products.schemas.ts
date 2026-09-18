@@ -16,6 +16,7 @@ export const publicProductFiltersSchema = z
     maxPriceCents: nonNegativeIntegerStringSchema.optional(),
     availability: z.enum(['available', 'reserved', 'sold']).optional(),
     sort: z.enum(['recent', 'price_asc', 'price_desc']).optional(),
+    search: z.string().trim().min(1).max(100).optional(),
   })
   .strict()
   .refine(
