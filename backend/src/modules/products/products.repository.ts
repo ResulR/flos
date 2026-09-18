@@ -54,6 +54,12 @@ export async function findPublicProducts(
     addCondition('p.status = ?', filters.availability)
   }
 
+  const orderBy = {
+    recent: 'p.created_at DESC, p.id DESC',
+    price_asc: 'p.price_cents ASC, p.id ASC',
+    price_desc: 'p.price_cents DESC, p.id DESC',
+  }[filters.sort ?? 'recent']
+
   const result = await db.query<PublicProductRow>(
     `
       SELECT
@@ -69,7 +75,7 @@ export async function findPublicProducts(
       INNER JOIN bike_conditions AS condition
         ON condition.id = p.condition_id
       WHERE ${conditions.join('\n        AND ')}
-      ORDER BY p.created_at DESC, p.id DESC
+      ORDER BY ${orderBy}
     `,
     values,
   )
