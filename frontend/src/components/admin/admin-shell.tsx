@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useRouterState } from '@tanstack/react-router'
 import {
   Bike,
   ClipboardList,
@@ -7,6 +8,7 @@ import {
   Menu,
   PackageCheck,
   Settings,
+  X,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -98,18 +100,30 @@ export function AdminShell({
 
               <button
                 type="button"
-                aria-label="Ouvrir la navigation administrateur"
+                aria-label={
+                  mobileOpen
+                    ? 'Fermer la navigation administrateur'
+                    : 'Ouvrir la navigation administrateur'
+                }
                 aria-expanded={mobileOpen}
+                aria-controls="admin-mobile-navigation"
                 onClick={() => setMobileOpen((open) => !open)}
                 className="inline-flex size-11 items-center justify-center rounded-md border border-border lg:hidden"
               >
-                <Menu aria-hidden="true" className="size-5" />
+                {mobileOpen ? (
+                  <X aria-hidden="true" className="size-5" />
+                ) : (
+                  <Menu aria-hidden="true" className="size-5" />
+                )}
               </button>
             </div>
           </div>
 
           {mobileOpen ? (
-            <div className="border-t border-border bg-brand-black text-brand-white lg:hidden">
+            <div
+              id="admin-mobile-navigation"
+              className="border-t border-border bg-brand-black text-brand-white lg:hidden"
+            >
               <AdminNavigation onNavigate={() => setMobileOpen(false)} />
             </div>
           ) : null}
@@ -122,17 +136,28 @@ export function AdminShell({
 }
 
 function AdminNavigation({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
+
   return (
     <nav aria-label="Navigation administrateur" className="space-y-1 p-4">
       {navigation.map((item) => {
         const Icon = item.icon
+        const isActive = pathname === item.href
 
         return (
           <a
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium text-brand-gray-400 transition-colors hover:bg-brand-charcoal hover:text-brand-white"
+            aria-current={isActive ? 'page' : undefined}
+            className={[
+              'flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors',
+              isActive
+                ? 'bg-brand-charcoal text-brand-white'
+                : 'text-brand-gray-400 hover:bg-brand-charcoal hover:text-brand-white',
+            ].join(' ')}
           >
             <Icon aria-hidden="true" className="size-4" />
             {item.label}
