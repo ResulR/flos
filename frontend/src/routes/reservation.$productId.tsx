@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ArrowLeft, Clock3 } from 'lucide-react'
 
 import { PublicPage } from '@/components/layout/public-page'
+import { Button } from '@/components/ui/button'
+import { TextField } from '@/components/ui/field'
 
 export const Route = createFileRoute('/reservation/$productId')({
   component: ReservationPage,
@@ -34,10 +36,10 @@ function ReservationPage() {
 
             <form className="mt-10 space-y-8">
               <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Prénom" name="firstName" />
-                <Field label="Nom" name="lastName" />
-                <Field label="Email" name="email" type="email" />
-                <Field label="Téléphone" name="phone" type="tel" />
+                <TextField label="Prénom" name="firstName" />
+                <TextField label="Nom" name="lastName" />
+                <TextField label="Email" name="email" type="email" />
+                <TextField label="Téléphone" name="phone" type="tel" />
               </div>
 
               <fieldset className="border-t border-border pt-8">
@@ -79,12 +81,9 @@ function ReservationPage() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="type-button inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-7 text-primary-foreground hover:bg-brand-red-dark"
-              >
+              <Button type="button" size="lg">
                 Confirmer la réservation gratuite
-              </button>
+              </Button>
             </form>
           </div>
 
@@ -104,22 +103,5 @@ function ReservationPage() {
         </div>
       </section>
     </PublicPage>
-  )
-}
-
-function Field({
-  label,
-  name,
-  type = 'text',
-}: {
-  label: string
-  name: string
-  type?: string
-}) {
-  return (
-    <label className="block">
-      <span className="type-label mb-2 block">{label}</span>
-      <input name={name} type={type} className="form-control w-full" />
-    </label>
   )
 }

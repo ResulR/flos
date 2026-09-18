@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+
+import { Card } from '@/components/ui/card'
 import {
   AlertCircle,
   CheckCircle2,
@@ -31,10 +33,7 @@ export function FlowState({
   const Icon = icons[kind]
 
   return (
-    <div
-      role={kind === 'error' ? 'alert' : 'status'}
-      className="rounded-xl border border-border bg-background p-6"
-    >
+    <Card role={kind === 'error' ? 'alert' : 'status'} className="p-6">
       <Icon
         aria-hidden="true"
         className={[
@@ -51,6 +50,6 @@ export function FlowState({
       </p>
 
       {action ? <div className="mt-5">{action}</div> : null}
-    </div>
+    </Card>
   )
 }

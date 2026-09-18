@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ImagePlus } from 'lucide-react'
 
 import { PublicPage } from '@/components/layout/public-page'
+import { Button } from '@/components/ui/button'
+import { TextField } from '@/components/ui/field'
 
 export const Route = createFileRoute('/reprise')({
   component: TradeInPage,
@@ -33,10 +35,10 @@ function TradeInPage() {
             <h2 className="type-heading-3">Vos coordonnées</h2>
 
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              <Field label="Prénom" name="firstName" required />
-              <Field label="Nom" name="lastName" required />
-              <Field label="Email" name="email" type="email" required />
-              <Field label="Téléphone" name="phone" type="tel" required />
+              <TextField label="Prénom" name="firstName" required />
+              <TextField label="Nom" name="lastName" required />
+              <TextField label="Email" name="email" type="email" required />
+              <TextField label="Téléphone" name="phone" type="tel" required />
             </div>
           </section>
 
@@ -48,10 +50,13 @@ function TradeInPage() {
             </p>
 
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              <Field label="Marque — facultatif" name="brand" />
-              <Field label="Modèle — facultatif" name="model" />
-              <Field label="Année — facultatif" name="year" />
-              <Field label="Prix souhaité — facultatif" name="desiredPrice" />
+              <TextField label="Marque — facultatif" name="brand" />
+              <TextField label="Modèle — facultatif" name="model" />
+              <TextField label="Année — facultatif" name="year" />
+              <TextField
+                label="Prix souhaité — facultatif"
+                name="desiredPrice"
+              />
             </div>
 
             <label className="mt-5 block">
@@ -83,38 +88,11 @@ function TradeInPage() {
             </label>
           </section>
 
-          <button
-            type="button"
-            className="type-button mt-10 inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-7 text-primary-foreground hover:bg-brand-red-dark"
-          >
+          <Button type="button" size="lg" className="mt-10">
             Envoyer ma demande
-          </button>
+          </Button>
         </form>
       </section>
     </PublicPage>
-  )
-}
-
-function Field({
-  label,
-  name,
-  type = 'text',
-  required = false,
-}: {
-  label: string
-  name: string
-  type?: string
-  required?: boolean
-}) {
-  return (
-    <label className="block">
-      <span className="type-label mb-2 block">{label}</span>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        className="form-control w-full"
-      />
-    </label>
   )
 }

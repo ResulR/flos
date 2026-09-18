@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 
+import { Badge } from '@/components/ui/badge'
+
 export function AdminPanel({
   title,
   description,
@@ -83,17 +85,5 @@ export function StatusBadge({
   children: ReactNode
   tone?: 'neutral' | 'positive' | 'warning'
 }) {
-  const classes = {
-    neutral: 'bg-brand-gray-100 text-brand-gray-800',
-    positive: 'bg-brand-black text-brand-white',
-    warning: 'bg-primary text-primary-foreground',
-  }
-
-  return (
-    <span
-      className={`inline-flex min-h-7 items-center rounded-md px-2.5 text-xs font-medium ${classes[tone]}`}
-    >
-      {children}
-    </span>
-  )
+  return <Badge tone={tone}>{children}</Badge>
 }

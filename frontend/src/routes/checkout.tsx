@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ArrowLeft, ExternalLink, LockKeyhole } from 'lucide-react'
 
 import { PublicPage } from '@/components/layout/public-page'
+import { Button } from '@/components/ui/button'
+import { TextField } from '@/components/ui/field'
 
 export const Route = createFileRoute('/checkout')({
   component: CheckoutPage,
@@ -40,10 +42,10 @@ function CheckoutPage() {
               <legend className="type-heading-3">Vos coordonnées</legend>
 
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <Field label="Prénom" name="firstName" />
-                <Field label="Nom" name="lastName" />
-                <Field label="Email" name="email" type="email" />
-                <Field label="Téléphone" name="phone" type="tel" />
+                <TextField label="Prénom" name="firstName" />
+                <TextField label="Nom" name="lastName" />
+                <TextField label="Email" name="email" type="email" />
+                <TextField label="Téléphone" name="phone" type="tel" />
               </div>
             </fieldset>
 
@@ -77,12 +79,12 @@ function CheckoutPage() {
 
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <Field label="Adresse" name="address" />
+                  <TextField label="Adresse" name="address" />
                 </div>
-                <Field label="Code postal" name="postalCode" />
-                <Field label="Ville" name="city" />
+                <TextField label="Code postal" name="postalCode" />
+                <TextField label="Ville" name="city" />
                 <div className="sm:col-span-2">
-                  <Field label="Pays" name="country" />
+                  <TextField label="Pays" name="country" />
                 </div>
               </div>
             </fieldset>
@@ -133,13 +135,10 @@ function CheckoutPage() {
               </div>
             </dl>
 
-            <button
-              type="button"
-              className="type-button mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-6 text-primary-foreground transition-colors hover:bg-brand-red-dark"
-            >
+            <Button type="button" size="lg" className="mt-6 w-full">
               Continuer vers Stripe
               <ExternalLink aria-hidden="true" className="size-4" />
-            </button>
+            </Button>
 
             <p className="type-secondary mt-4 text-muted-foreground">
               Le montant final sera recalculé côté serveur avant la création de
@@ -149,23 +148,6 @@ function CheckoutPage() {
         </div>
       </section>
     </PublicPage>
-  )
-}
-
-function Field({
-  label,
-  name,
-  type = 'text',
-}: {
-  label: string
-  name: string
-  type?: string
-}) {
-  return (
-    <label className="block">
-      <span className="type-label mb-2 block">{label}</span>
-      <input name={name} type={type} className="form-control w-full" />
-    </label>
   )
 }
 
