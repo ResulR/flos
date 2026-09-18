@@ -97,3 +97,131 @@ export async function findPublicProducts(
 
   return result.rows
 }
+
+export type PublicProductDetailRow = {
+  id: string
+  brand: string
+  model: string
+  bike_type: string
+  condition: string
+  year: number | null
+  description: string
+  price_cents: string
+  status: 'available' | 'reserved' | 'sold'
+  reserved_until: Date | null
+}
+
+export async function findPublicProductById(
+  productId: string,
+): Promise<PublicProductDetailRow | null> {
+  const result = await db.query<PublicProductDetailRow>(
+    `
+      SELECT
+        p.id::text AS id,
+        brand.name AS brand,
+        p.model,
+        bike_type.name AS bike_type,
+        condition.name AS condition,
+        p.year,
+        p.description,
+        p.price_cents::text AS price_cents,
+        p.status,
+        reservation.expires_at AS reserved_until
+      FROM products AS p
+      INNER JOIN product_brands AS brand
+        ON brand.id = p.brand_id
+      INNER JOIN bike_types AS bike_type
+        ON bike_type.id = p.bike_type_id
+      INNER JOIN bike_conditions AS condition
+        ON condition.id = p.condition_id
+      LEFT JOIN LATERAL (
+        SELECT expires_at
+        FROM reservations
+        WHERE product_id = p.id
+          AND status = 'active'
+        LIMIT 1
+      ) AS reservation ON true
+      WHERE p.id = $1::bigint
+        AND p.is_active = true
+        AND p.deleted_at IS NULL
+        AND p.status IN ('available', 'reserved', 'sold')
+      LIMIT 1
+    `,
+    [productId],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export type PublicProductSpecRow = {
+  id: string
+  label: string
+  value: string
+}
+
+export async function findPublicProductSpecs(
+  productId: string,
+): Promise<PublicProductSpecRow[]> {
+  const result = await db.query<PublicProductSpecRow>(
+    `
+      SELECT
+        id::text AS id,
+        label,
+        value
+      FROM product_specs
+      WHERE product_id = $1::bigint
+      ORDER BY display_order ASC, id ASC
+    `,
+    [productId],
+  )
+
+  return result.rows
+}
+
+export type PublicProductMediaRow = {
+  id: string
+  file_path: string
+}
+
+export async function findPublicProductMedia(
+  productId: string,
+): Promise<PublicProductMediaRow[]> {
+  const result = await db.query<PublicProductMediaRow>(
+    `
+      SELECT
+        id::text AS id,
+        file_path
+      FROM product_media
+      WHERE product_id = $1::bigint
+      ORDER BY display_order ASC, id ASC
+    `,
+    [productId],
+  )
+
+  return result.rows
+}
+
+export async function findPublicProductMediaById(
+  productId: string,
+  mediaId: string,
+): Promise<PublicProductMediaRow | null> {
+  const result = await db.query<PublicProductMediaRow>(
+    `
+      SELECT
+        media.id::text AS id,
+        media.file_path
+      FROM product_media AS media
+      INNER JOIN products AS product
+        ON product.id = media.product_id
+      WHERE media.id = $1::bigint
+        AND media.product_id = $2::bigint
+        AND product.is_active = true
+        AND product.deleted_at IS NULL
+        AND product.status IN ('available', 'reserved', 'sold')
+      LIMIT 1
+    `,
+    [mediaId, productId],
+  )
+
+  return result.rows[0] ?? null
+}

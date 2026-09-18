@@ -31,3 +31,18 @@ export const publicProductFiltersSchema = z
   )
 
 export type PublicProductFilters = z.infer<typeof publicProductFiltersSchema>
+
+export const publicProductParamsSchema = z.object({
+  productId: bigintIdSchema,
+})
+
+export const publicProductMediaParamsSchema = z.object({
+  productId: bigintIdSchema,
+  mediaId: bigintIdSchema,
+})
+
+export type PublicProductParams = z.infer<typeof publicProductParamsSchema>
+
+export type PublicProductMediaParams = z.infer<
+  typeof publicProductMediaParamsSchema
+>
