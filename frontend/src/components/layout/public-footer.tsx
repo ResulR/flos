@@ -1,6 +1,7 @@
 type PublicFooterProps = {
   phone?: string | null
   email?: string | null
+  address?: string | null
 }
 
 const navigation = [
@@ -15,7 +16,7 @@ const legalLinks = [
   { label: 'Politique de cookies', href: '/cookies' },
 ]
 
-export function PublicFooter({ phone, email }: PublicFooterProps) {
+export function PublicFooter({ phone, email, address }: PublicFooterProps) {
   return (
     <footer className="mt-16 bg-brand-black text-brand-white">
       <div className="site-container py-12 lg:py-16">
@@ -73,7 +74,13 @@ export function PublicFooter({ phone, email }: PublicFooterProps) {
                 </a>
               ) : null}
 
-              {!phone && !email ? (
+              {address ? (
+                <span className="type-secondary text-brand-gray-400">
+                  {address}
+                </span>
+              ) : null}
+
+              {!phone && !email && !address ? (
                 <span className="type-secondary text-brand-gray-400">
                   Coordonnées disponibles prochainement.
                 </span>
