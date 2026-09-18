@@ -56,6 +56,8 @@ function CataloguePage() {
   const [availability, setAvailability] = useState('')
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [sort, setSort] = useState<'recent' | 'price_asc' | 'price_desc'>(
     'recent',
   )
@@ -108,6 +110,16 @@ function CataloguePage() {
   }, [])
 
   useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(search.trim())
+    }, 350)
+
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [search])
+
+  useEffect(() => {
     let cancelled = false
 
     async function loadProducts() {
@@ -121,6 +133,7 @@ function CataloguePage() {
       if (conditionId) params.set('conditionId', conditionId)
       if (year) params.set('year', year)
       if (availability) params.set('availability', availability)
+      if (debouncedSearch) params.set('search', debouncedSearch)
       params.set('sort', sort)
 
       if (minPrice) {
@@ -164,6 +177,7 @@ function CataloguePage() {
     availability,
     minPrice,
     maxPrice,
+    debouncedSearch,
     sort,
   ])
 
@@ -196,6 +210,9 @@ function CataloguePage() {
               <input
                 type="search"
                 placeholder="Marque ou modèle"
+                maxLength={100}
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
                 className="form-control w-full pl-11 pr-4"
               />
             </label>
@@ -306,12 +323,14 @@ function CataloguePage() {
               <FlowState
                 kind="empty"
                 title={
-                  hasActiveFilters
-                    ? 'Aucun résultat pour ces filtres'
-                    : 'Aucun vélo pour le moment'
+                  debouncedSearch
+                    ? 'Aucun résultat pour cette recherche'
+                    : hasActiveFilters
+                      ? 'Aucun résultat pour ces filtres'
+                      : 'Aucun vélo pour le moment'
                 }
                 description={
-                  hasActiveFilters
+                  debouncedSearch || hasActiveFilters
                     ? 'Aucun vélo ne correspond actuellement aux critères sélectionnés.'
                     : 'Le catalogue ne contient actuellement aucun vélo à afficher.'
                 }
