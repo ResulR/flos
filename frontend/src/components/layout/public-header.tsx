@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Menu, ShoppingBag, X } from 'lucide-react'
 
+import { useCart } from '@/features/cart/cart-context'
+
 const navigation = [
   { label: 'Catalogue', href: '/catalogue' },
   { label: 'Reprise', href: '/reprise' },
@@ -10,6 +12,8 @@ const navigation = [
 
 export function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { itemCount, isHydrated } = useCart()
+  const displayedItemCount = isHydrated ? itemCount : 0
 
   return (
     <header className="border-b border-border bg-background">
@@ -40,7 +44,9 @@ export function PublicHeader() {
         <div className="flex items-center gap-2">
           <a
             href="/panier"
-            aria-label="Panier, 0 article"
+            aria-label={`Panier, ${displayedItemCount} ${
+              displayedItemCount > 1 ? 'articles' : 'article'
+            }`}
             className="relative inline-flex size-11 items-center justify-center rounded-md transition-colors hover:bg-muted"
           >
             <ShoppingBag
@@ -49,7 +55,7 @@ export function PublicHeader() {
               strokeWidth={1.8}
             />
             <span className="absolute right-1.5 top-1.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium leading-none text-primary-foreground">
-              0
+              {displayedItemCount}
             </span>
           </a>
 
