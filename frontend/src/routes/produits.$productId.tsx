@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Clock3, ShieldCheck } from 'lucide-react'
 
 import { FlowState } from '@/components/feedback/flow-state'
 import { PublicPage } from '@/components/layout/public-page'
+import { useCart } from '@/features/cart/cart-context'
 import { apiRequest, buildApiUrl } from '@/lib/api'
 
 export const Route = createFileRoute('/produits/$productId')({
@@ -48,7 +49,9 @@ function formatReservationExpiration(value: string) {
 
 function ProductPage() {
   const { productId } = Route.useParams()
+  const { items, isHydrated, addItem } = useCart()
   const [product, setProduct] = useState<ProductDetail | null>(null)
+  const [cartFeedback, setCartFeedback] = useState<string | null>(null)
   const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -245,20 +248,42 @@ function ProductPage() {
             </div>
 
             {product.status === 'available' ? (
-              <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                <a
-                  href="/panier"
-                  className="type-button inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-6 text-primary-foreground transition-colors hover:bg-brand-red-dark"
-                >
-                  Ajouter au panier
-                </a>
+              <div className="mt-8">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    disabled={
+                      !isHydrated ||
+                      items.some((item) => item.productId === product.id)
+                    }
+                    onClick={() => {
+                      addItem(product.id)
+                      setCartFeedback('Ce vélo a été ajouté au panier.')
+                    }}
+                    className="type-button inline-flex min-h-12 items-center justify-center rounded-md bg-primary px-6 text-primary-foreground transition-colors hover:bg-brand-red-dark disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {items.some((item) => item.productId === product.id)
+                      ? 'Dans le panier'
+                      : 'Ajouter au panier'}
+                  </button>
 
-                <a
-                  href={`/reservation/${product.id}`}
-                  className="type-button inline-flex min-h-12 items-center justify-center rounded-md border border-brand-black px-6 text-brand-black transition-colors hover:bg-brand-gray-50"
-                >
-                  Réserver
-                </a>
+                  <a
+                    href={`/reservation/${product.id}`}
+                    className="type-button inline-flex min-h-12 items-center justify-center rounded-md border border-brand-black px-6 text-brand-black transition-colors hover:bg-brand-gray-50"
+                  >
+                    Réserver
+                  </a>
+                </div>
+
+                {cartFeedback ? (
+                  <p
+                    role="status"
+                    aria-live="polite"
+                    className="type-secondary mt-3 text-primary"
+                  >
+                    {cartFeedback}
+                  </p>
+                ) : null}
               </div>
             ) : null}
 

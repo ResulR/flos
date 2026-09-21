@@ -7,13 +7,18 @@ import {
   type ReactNode,
 } from 'react'
 
-import { readStoredCart, writeStoredCart, type CartItem } from './cart-storage'
+import {
+  readStoredCart,
+  sanitizeCartItems,
+  writeStoredCart,
+  type CartItem,
+} from './cart-storage'
 
 type CartContextValue = {
   items: CartItem[]
   itemCount: number
   isHydrated: boolean
-  setItems: React.Dispatch<React.SetStateAction<CartItem[]>>
+  addItem: (productId: string) => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -42,7 +47,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       items,
       itemCount: items.length,
       isHydrated,
-      setItems,
+      addItem: (productId: string) => {
+        setItems((currentItems) =>
+          sanitizeCartItems([
+            ...currentItems,
+            {
+              productId,
+              quantity: 1,
+            },
+          ]),
+        )
+      },
     }),
     [items, isHydrated],
   )
