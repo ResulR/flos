@@ -4,25 +4,16 @@ import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
 import { revalidateCart } from '../cart/cart.service.js'
 import type { RevalidateCartBody } from '../cart/cart.schemas.js'
+import type { DraftOrderCheckoutData } from './orders.schemas.js'
 import { insertDraftOrder, insertDraftOrderItems } from './orders.repository.js'
 
-export type DraftOrderCheckoutData = {
-  customerFirstName: string
-  customerLastName: string
-  customerEmail: string
-  customerPhone: string
-  fulfillmentMethod: 'delivery' | 'pickup'
-  deliveryAddressLine1: string | null
-  deliveryAddressLine2: string | null
-  deliveryPostalCode: string | null
-  deliveryCity: string | null
-  deliveryCountry: string | null
+export type DraftOrderCheckoutPersistenceData = DraftOrderCheckoutData & {
   deliveryFeeCents: string
 }
 
 export type CreateDraftOrderInput = {
   cart: RevalidateCartBody
-  checkout: DraftOrderCheckoutData
+  checkout: DraftOrderCheckoutPersistenceData
 }
 
 export type CreatedDraftOrder = {
