@@ -21,3 +21,20 @@ export async function findPublicSiteSettings() {
 
   return result.rows[0] ?? null
 }
+
+export type DeliveryFeeRow = {
+  delivery_fee_cents: string
+}
+
+export async function findDeliveryFeeCents() {
+  const result = await db.query<DeliveryFeeRow>(
+    `
+      SELECT delivery_fee_cents::text AS delivery_fee_cents
+      FROM site_settings
+      WHERE id = 1
+      LIMIT 1
+    `,
+  )
+
+  return result.rows[0]?.delivery_fee_cents ?? null
+}

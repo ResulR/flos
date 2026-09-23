@@ -4,16 +4,13 @@ import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
 import { revalidateCart } from '../cart/cart.service.js'
 import type { RevalidateCartBody } from '../cart/cart.schemas.js'
+import { getDeliveryFeeCents } from '../site-settings/site-settings.service.js'
 import type { DraftOrderCheckoutData } from './orders.schemas.js'
 import { insertDraftOrder, insertDraftOrderItems } from './orders.repository.js'
 
-export type DraftOrderCheckoutPersistenceData = DraftOrderCheckoutData & {
-  deliveryFeeCents: string
-}
-
 export type CreateDraftOrderInput = {
   cart: RevalidateCartBody
-  checkout: DraftOrderCheckoutPersistenceData
+  checkout: DraftOrderCheckoutData
 }
 
 export type CreatedDraftOrder = {
@@ -70,7 +67,10 @@ export async function createDraftOrder(
   })
 
   const subtotalCents = BigInt(cart.totalCents)
-  const deliveryFeeCents = BigInt(input.checkout.deliveryFeeCents)
+  const deliveryFeeCents =
+    input.checkout.fulfillmentMethod === 'pickup'
+      ? 0n
+      : BigInt(await getDeliveryFeeCents())
   const totalCents = subtotalCents + deliveryFeeCents
 
   const client = await db.connect()

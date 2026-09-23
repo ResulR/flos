@@ -1,5 +1,8 @@
 import { AppError } from '../../http/errors.js'
-import { findPublicSiteSettings } from './site-settings.repository.js'
+import {
+  findDeliveryFeeCents,
+  findPublicSiteSettings,
+} from './site-settings.repository.js'
 
 export type PublicSiteSettings = {
   phone: string | null
@@ -23,4 +26,18 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
     email: settings.contact_email,
     address: settings.contact_address,
   }
+}
+
+export async function getDeliveryFeeCents(): Promise<string> {
+  const deliveryFeeCents = await findDeliveryFeeCents()
+
+  if (deliveryFeeCents === null) {
+    throw new AppError(
+      500,
+      'INTERNAL_ERROR',
+      'Les paramètres du site sont indisponibles',
+    )
+  }
+
+  return deliveryFeeCents
 }
