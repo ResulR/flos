@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
 import {
+  findReservationByPurchaseTokenHash,
   hasActiveReservation,
   hasActiveReservationForContact,
   insertReservation,
@@ -27,6 +28,34 @@ function createSecret() {
 
 function hashSecret(secret: string) {
   return createHash('sha256').update(secret).digest('hex')
+}
+
+export type ReservationAccess = {
+  reservationId: string
+  productId: string
+}
+
+export async function validateReservationPurchaseAccess(
+  reservationId: string,
+  purchaseToken: string,
+): Promise<ReservationAccess> {
+  const reservation = await findReservationByPurchaseTokenHash(
+    reservationId,
+    hashSecret(purchaseToken),
+  )
+
+  if (!reservation) {
+    throw new AppError(
+      403,
+      'RESERVATION_ACCESS_DENIED',
+      'Accès à la réservation refusé',
+    )
+  }
+
+  return {
+    reservationId: reservation.id,
+    productId: reservation.product_id,
+  }
 }
 
 export async function createReservation(

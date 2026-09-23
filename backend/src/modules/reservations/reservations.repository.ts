@@ -1,5 +1,7 @@
 import type { PoolClient } from 'pg'
 
+import { db } from '../../config/database.js'
+
 export type ReservableProductRow = {
   id: string
   status: 'available' | 'reserved' | 'sold' | 'hidden'
@@ -164,6 +166,31 @@ export async function insertReservation(
   }
 
   return reservation
+}
+
+export type ReservationAccessRow = {
+  id: string
+  product_id: string
+}
+
+export async function findReservationByPurchaseTokenHash(
+  reservationId: string,
+  purchaseTokenHash: string,
+): Promise<ReservationAccessRow | null> {
+  const result = await db.query<ReservationAccessRow>(
+    `
+      SELECT
+        id::text AS id,
+        product_id::text AS product_id
+      FROM reservations
+      WHERE id = $1::bigint
+        AND purchase_token_hash = $2
+      LIMIT 1
+    `,
+    [reservationId, purchaseTokenHash],
+  )
+
+  return result.rows[0] ?? null
 }
 
 export async function markProductReserved(
