@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "migrate": "tsx src/scripts/migrate.ts"
+    "migrate": "tsx src/scripts/migrate.ts",
+    "expire-reservations": "node dist/scripts/expire-reservations.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

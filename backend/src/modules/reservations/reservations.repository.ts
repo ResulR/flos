@@ -208,3 +208,50 @@ export async function markProductReserved(
     [productId],
   )
 }
+
+export async function markDueReservationsExpired(
+  client: PoolClient,
+): Promise<string[]> {
+  const result = await client.query<{ product_id: string }>(
+    `
+      UPDATE reservations
+      SET
+        status = 'expired',
+        updated_at = now()
+      WHERE status = 'active'
+        AND expires_at <= now()
+      RETURNING product_id::text AS product_id
+    `,
+  )
+
+  return result.rows.map((row) => row.product_id)
+}
+
+export async function releaseProductsWithoutActiveReservation(
+  client: PoolClient,
+  productIds: string[],
+): Promise<number> {
+  if (productIds.length === 0) {
+    return 0
+  }
+
+  const result = await client.query(
+    `
+      UPDATE products AS product
+      SET
+        status = 'available',
+        updated_at = now()
+      WHERE product.id = ANY($1::bigint[])
+        AND product.status = 'reserved'
+        AND NOT EXISTS (
+          SELECT 1
+          FROM reservations AS reservation
+          WHERE reservation.product_id = product.id
+            AND reservation.status = 'active'
+        )
+    `,
+    [productIds],
+  )
+
+  return result.rowCount ?? 0
+}

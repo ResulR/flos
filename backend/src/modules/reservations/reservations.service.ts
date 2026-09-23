@@ -9,7 +9,9 @@ import {
   insertReservation,
   lockProductForReservation,
   lockReservationContact,
+  markDueReservationsExpired,
   markProductReserved,
+  releaseProductsWithoutActiveReservation,
 } from './reservations.repository.js'
 import type { CreateReservationInput } from './reservations.schemas.js'
 
@@ -118,6 +120,37 @@ export async function createReservation(
       status: reservation.status,
       cancelToken,
       purchaseToken,
+    }
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+export type ExpireDueReservationsResult = {
+  expiredReservations: number
+  releasedProducts: number
+}
+
+export async function expireDueReservations(): Promise<ExpireDueReservationsResult> {
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const productIds = await markDueReservationsExpired(client)
+    const releasedProducts = await releaseProductsWithoutActiveReservation(
+      client,
+      productIds,
+    )
+
+    await client.query('COMMIT')
+
+    return {
+      expiredReservations: productIds.length,
+      releasedProducts,
     }
   } catch (error) {
     await client.query('ROLLBACK').catch(() => undefined)
