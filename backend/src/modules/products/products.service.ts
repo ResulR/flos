@@ -21,6 +21,7 @@ export type PublicProductListItem = {
   priceCents: string
   condition: string
   status: 'available' | 'reserved' | 'sold'
+  reservedUntil: string | null
   imageUrl: string | null
 }
 
@@ -32,6 +33,10 @@ function toPublicProductListItem(row: PublicProductRow): PublicProductListItem {
     priceCents: row.price_cents,
     condition: row.condition,
     status: row.status,
+    reservedUntil:
+      row.status === 'reserved' && row.reserved_until
+        ? row.reserved_until.toISOString()
+        : null,
     imageUrl: null,
   }
 }

@@ -19,6 +19,7 @@ type CatalogueProduct = {
   priceCents: string
   condition: string
   status: 'available' | 'reserved' | 'sold'
+  reservedUntil: string | null
   imageUrl: string | null
 }
 
@@ -39,6 +40,13 @@ function formatPrice(priceCents: string) {
     style: 'currency',
     currency: 'EUR',
   }).format(Number(priceCents) / 100)
+}
+
+function formatReservationExpiration(value: string) {
+  return new Intl.DateTimeFormat('fr-BE', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value))
 }
 
 function CataloguePage() {
@@ -347,6 +355,11 @@ function CataloguePage() {
                     priceLabel={formatPrice(product.priceCents)}
                     condition={product.condition}
                     status={product.status}
+                    reservedUntil={
+                      product.reservedUntil
+                        ? formatReservationExpiration(product.reservedUntil)
+                        : null
+                    }
                   />
                 ))}
               </div>
