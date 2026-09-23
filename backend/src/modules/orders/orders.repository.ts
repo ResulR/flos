@@ -17,6 +17,7 @@ export type DraftOrderInsert = {
   deliveryFeeCents: string
   totalCents: string
   publicTrackingTokenHash: string
+  reservationId: string | null
 }
 
 export type DraftOrderRow = {
@@ -52,7 +53,8 @@ export async function insertDraftOrder(
         delivery_fee_cents,
         total_cents,
         currency,
-        public_tracking_token_hash
+        public_tracking_token_hash,
+        reservation_id
       )
       VALUES (
         $1,
@@ -71,7 +73,8 @@ export async function insertDraftOrder(
         $12::bigint,
         $13::bigint,
         'EUR',
-        $14
+        $14,
+        $15::bigint
       )
       RETURNING
         id::text AS id,
@@ -97,6 +100,7 @@ export async function insertDraftOrder(
       input.deliveryFeeCents,
       input.totalCents,
       input.publicTrackingTokenHash,
+      input.reservationId,
     ],
   )
 

@@ -193,6 +193,104 @@ export async function findReservationByPurchaseTokenHash(
   return result.rows[0] ?? null
 }
 
+export type ReservationPurchaseRow = {
+  id: string
+  product_id: string
+  customer_first_name: string
+  customer_last_name: string
+  customer_email: string
+  customer_phone: string
+  expires_at: Date
+  status: 'active' | 'cancelled' | 'expired' | 'converted'
+  is_expired: boolean
+}
+
+export async function lockReservationForPurchase(
+  client: PoolClient,
+  reservationId: string,
+  purchaseTokenHash: string,
+): Promise<ReservationPurchaseRow | null> {
+  const result = await client.query<ReservationPurchaseRow>(
+    `
+      SELECT
+        id::text AS id,
+        product_id::text AS product_id,
+        customer_first_name,
+        customer_last_name,
+        customer_email,
+        customer_phone,
+        expires_at,
+        status,
+        expires_at <= now() AS is_expired
+      FROM reservations
+      WHERE id = $1::bigint
+        AND purchase_token_hash = $2
+      FOR UPDATE
+    `,
+    [reservationId, purchaseTokenHash],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export type ReservedProductForOrderRow = {
+  id: string
+  brand: string
+  model: string
+  price_cents: string
+  status: 'available' | 'reserved' | 'sold' | 'hidden'
+  is_active: boolean
+  deleted_at: Date | null
+}
+
+export async function lockReservedProductForOrder(
+  client: PoolClient,
+  productId: string,
+): Promise<ReservedProductForOrderRow | null> {
+  const result = await client.query<ReservedProductForOrderRow>(
+    `
+      SELECT
+        product.id::text AS id,
+        brand.name AS brand,
+        product.model,
+        product.price_cents::text AS price_cents,
+        product.status,
+        product.is_active,
+        product.deleted_at
+      FROM products AS product
+      INNER JOIN product_brands AS brand
+        ON brand.id = product.brand_id
+      WHERE product.id = $1::bigint
+      FOR UPDATE OF product
+    `,
+    [productId],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export async function markReservationConverted(
+  client: PoolClient,
+  reservationId: string,
+): Promise<void> {
+  const result = await client.query(
+    `
+      UPDATE reservations
+      SET
+        status = 'converted',
+        converted_at = now(),
+        updated_at = now()
+      WHERE id = $1::bigint
+        AND status = 'active'
+    `,
+    [reservationId],
+  )
+
+  if (result.rowCount !== 1) {
+    throw new Error('Reservation conversion updated no row')
+  }
+}
+
 export async function markProductReserved(
   client: PoolClient,
   productId: string,
