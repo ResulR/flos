@@ -13,6 +13,7 @@ import { ordersRouter } from './modules/orders/orders.routes.js'
 import { productsRouter } from './modules/products/products.routes.js'
 import { reservationsRouter } from './modules/reservations/reservations.routes.js'
 import { siteSettingsRouter } from './modules/site-settings/site-settings.routes.js'
+import { tradeInsRouter } from './modules/trade-ins/trade-ins.routes.js'
 
 const app = express()
 
@@ -32,6 +33,7 @@ app.use('/site-settings', siteSettingsRouter)
 app.use('/cart', cartRouter)
 app.use('/orders', ordersRouter)
 app.use('/reservations', reservationsRouter)
+app.use('/trade-ins', tradeInsRouter)
 
 app.use(errorHandler)
 
