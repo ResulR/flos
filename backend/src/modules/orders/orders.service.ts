@@ -6,7 +6,12 @@ import { revalidateCart } from '../cart/cart.service.js'
 import type { RevalidateCartBody } from '../cart/cart.schemas.js'
 import { getDeliveryFeeCents } from '../site-settings/site-settings.service.js'
 import type { DraftOrderCheckoutData } from './orders.schemas.js'
-import { insertDraftOrder, insertDraftOrderItems } from './orders.repository.js'
+import {
+  findPublicOrderByTrackingTokenHash,
+  findPublicOrderItems,
+  insertDraftOrder,
+  insertDraftOrderItems,
+} from './orders.repository.js'
 
 export type CreateDraftOrderInput = {
   cart: RevalidateCartBody
@@ -112,5 +117,55 @@ export async function createDraftOrder(
     throw error
   } finally {
     client.release()
+  }
+}
+
+export type PublicOrderTracking = {
+  id: string
+  status:
+    | 'pending_payment'
+    | 'payment_failed'
+    | 'payment_expired'
+    | 'confirmed'
+    | 'preparing'
+    | 'shipped'
+    | 'completed'
+    | 'ready'
+    | 'picked_up'
+    | 'cancelled'
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'expired'
+  fulfillmentMethod: 'delivery' | 'pickup'
+  totalCents: string
+  currency: 'EUR'
+  items: Array<{
+    productName: string
+    unitPriceCents: string
+  }>
+}
+
+export async function getPublicOrderTracking(
+  trackingToken: string,
+): Promise<PublicOrderTracking> {
+  const order = await findPublicOrderByTrackingTokenHash(
+    hashTrackingToken(trackingToken),
+  )
+
+  if (!order) {
+    throw new AppError(404, 'NOT_FOUND', 'Commande introuvable')
+  }
+
+  const items = await findPublicOrderItems(order.id)
+
+  return {
+    id: order.id,
+    status: order.status,
+    paymentStatus: order.payment_status,
+    fulfillmentMethod: order.fulfillment_method,
+    totalCents: order.total_cents,
+    currency: order.currency,
+    items: items.map((item) => ({
+      productName: item.product_name,
+      unitPriceCents: item.unit_price_cents,
+    })),
   }
 }

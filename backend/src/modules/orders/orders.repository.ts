@@ -1,5 +1,7 @@
 import type { PoolClient } from 'pg'
 
+import { db } from '../../config/database.js'
+
 export type DraftOrderInsert = {
   customerFirstName: string
   customerLastName: string
@@ -137,4 +139,68 @@ export async function insertDraftOrderItems(
       [orderId, item.productId, item.productName, item.unitPriceCents],
     )
   }
+}
+
+export type PublicOrderTrackingRow = {
+  id: string
+  status:
+    | 'pending_payment'
+    | 'payment_failed'
+    | 'payment_expired'
+    | 'confirmed'
+    | 'preparing'
+    | 'shipped'
+    | 'completed'
+    | 'ready'
+    | 'picked_up'
+    | 'cancelled'
+  payment_status: 'pending' | 'paid' | 'failed' | 'expired'
+  fulfillment_method: 'delivery' | 'pickup'
+  total_cents: string
+  currency: 'EUR'
+}
+
+export type PublicOrderTrackingItemRow = {
+  product_name: string
+  unit_price_cents: string
+}
+
+export async function findPublicOrderByTrackingTokenHash(
+  trackingTokenHash: string,
+): Promise<PublicOrderTrackingRow | null> {
+  const result = await db.query<PublicOrderTrackingRow>(
+    `
+      SELECT
+        id::text AS id,
+        status,
+        payment_status,
+        fulfillment_method,
+        total_cents::text AS total_cents,
+        currency
+      FROM orders
+      WHERE public_tracking_token_hash = $1
+      LIMIT 1
+    `,
+    [trackingTokenHash],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export async function findPublicOrderItems(
+  orderId: string,
+): Promise<PublicOrderTrackingItemRow[]> {
+  const result = await db.query<PublicOrderTrackingItemRow>(
+    `
+      SELECT
+        product_name,
+        unit_price_cents::text AS unit_price_cents
+      FROM order_items
+      WHERE order_id = $1::bigint
+      ORDER BY id ASC
+    `,
+    [orderId],
+  )
+
+  return result.rows
 }

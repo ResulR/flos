@@ -65,3 +65,15 @@ export const createDraftOrderBodySchema = z
   .strict()
 
 export type CreateDraftOrderBody = z.infer<typeof createDraftOrderBodySchema>
+
+export const publicOrderTrackingParamsSchema = z
+  .object({
+    trackingToken: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{43}$/, 'Token de suivi invalide'),
+  })
+  .strict()
+
+export type PublicOrderTrackingParams = z.infer<
+  typeof publicOrderTrackingParamsSchema
+>
