@@ -47,6 +47,52 @@ export async function hasActiveReservation(
   return result.rows[0]?.exists ?? false
 }
 
+export async function lockReservationContact(
+  client: PoolClient,
+  email: string,
+  phone: string,
+): Promise<void> {
+  const lockKeys = [
+    `reservation-contact:email:${email}`,
+    `reservation-contact:phone:${phone}`,
+  ].sort()
+
+  for (const lockKey of lockKeys) {
+    await client.query(
+      `
+        SELECT pg_advisory_xact_lock(
+          hashtextextended($1, 0)
+        )
+      `,
+      [lockKey],
+    )
+  }
+}
+
+export async function hasActiveReservationForContact(
+  client: PoolClient,
+  email: string,
+  phone: string,
+): Promise<boolean> {
+  const result = await client.query<{ exists: boolean }>(
+    `
+      SELECT EXISTS (
+        SELECT 1
+        FROM reservations
+        WHERE status = 'active'
+          AND expires_at > now()
+          AND (
+            customer_email = $1
+            OR customer_phone = $2
+          )
+      ) AS exists
+    `,
+    [email, phone],
+  )
+
+  return result.rows[0]?.exists ?? false
+}
+
 export type InsertReservationInput = {
   productId: string
   firstName: string

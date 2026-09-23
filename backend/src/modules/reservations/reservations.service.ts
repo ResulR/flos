@@ -4,8 +4,10 @@ import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
 import {
   hasActiveReservation,
+  hasActiveReservationForContact,
   insertReservation,
   lockProductForReservation,
+  lockReservationContact,
   markProductReserved,
 } from './reservations.repository.js'
 import type { CreateReservationInput } from './reservations.schemas.js'
@@ -48,6 +50,18 @@ export async function createReservation(
 
     if (await hasActiveReservation(client, input.productId)) {
       throw new AppError(409, 'PRODUCT_NOT_AVAILABLE', 'Produit indisponible')
+    }
+
+    await lockReservationContact(client, input.email, input.phone)
+
+    if (
+      await hasActiveReservationForContact(client, input.email, input.phone)
+    ) {
+      throw new AppError(
+        409,
+        'RESERVATION_LIMIT_REACHED',
+        'Une réservation active existe déjà pour ce contact',
+      )
     }
 
     const cancelToken = createSecret()
