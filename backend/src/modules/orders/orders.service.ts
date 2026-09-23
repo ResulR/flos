@@ -15,6 +15,7 @@ export type CreateDraftOrderInput = {
 
 export type CreatedDraftOrder = {
   id: string
+  trackingToken: string
   status: 'pending_payment'
   paymentStatus: 'pending'
   subtotalCents: string
@@ -28,8 +29,12 @@ export type CreatedDraftOrder = {
   }>
 }
 
-function createInternalTrackingPlaceholder() {
-  return createHash('sha256').update(randomBytes(32)).digest('hex')
+function createTrackingToken() {
+  return randomBytes(32).toString('base64url')
+}
+
+function hashTrackingToken(trackingToken: string) {
+  return createHash('sha256').update(trackingToken).digest('hex')
 }
 
 export async function createDraftOrder(
@@ -72,6 +77,7 @@ export async function createDraftOrder(
       ? 0n
       : BigInt(await getDeliveryFeeCents())
   const totalCents = subtotalCents + deliveryFeeCents
+  const trackingToken = createTrackingToken()
 
   const client = await db.connect()
 
@@ -83,7 +89,7 @@ export async function createDraftOrder(
       subtotalCents: subtotalCents.toString(),
       deliveryFeeCents: deliveryFeeCents.toString(),
       totalCents: totalCents.toString(),
-      publicTrackingTokenHash: createInternalTrackingPlaceholder(),
+      publicTrackingTokenHash: hashTrackingToken(trackingToken),
     })
 
     await insertDraftOrderItems(client, order.id, items)
@@ -92,6 +98,7 @@ export async function createDraftOrder(
 
     return {
       id: order.id,
+      trackingToken,
       status: order.status,
       paymentStatus: order.payment_status,
       subtotalCents: order.subtotal_cents,
