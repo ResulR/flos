@@ -10,6 +10,7 @@ import { errorHandler } from './http/error-handler.js'
 import { requestLogger } from './http/request-logger.js'
 import { cartRouter } from './modules/cart/cart.routes.js'
 import { productsRouter } from './modules/products/products.routes.js'
+import { reservationsRouter } from './modules/reservations/reservations.routes.js'
 import { siteSettingsRouter } from './modules/site-settings/site-settings.routes.js'
 
 const app = express()
@@ -28,6 +29,7 @@ app.get('/health', (_req, res) => {
 app.use('/products', productsRouter)
 app.use('/site-settings', siteSettingsRouter)
 app.use('/cart', cartRouter)
+app.use('/reservations', reservationsRouter)
 
 app.use(errorHandler)
 
