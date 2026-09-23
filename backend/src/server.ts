@@ -8,6 +8,7 @@ import { env } from './config/env.js'
 import { logger } from './config/logger.js'
 import { errorHandler } from './http/error-handler.js'
 import { requestLogger } from './http/request-logger.js'
+import { cartRouter } from './modules/cart/cart.routes.js'
 import { productsRouter } from './modules/products/products.routes.js'
 import { siteSettingsRouter } from './modules/site-settings/site-settings.routes.js'
 
@@ -26,6 +27,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/products', productsRouter)
 app.use('/site-settings', siteSettingsRouter)
+app.use('/cart', cartRouter)
 
 app.use(errorHandler)
 
