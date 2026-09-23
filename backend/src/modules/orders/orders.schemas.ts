@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { revalidateCartBodySchema } from '../cart/cart.schemas.js'
+
 const customerFields = {
   customerFirstName: z.string().trim().min(1, 'Prénom requis'),
   customerLastName: z.string().trim().min(1, 'Nom requis'),
@@ -54,3 +56,12 @@ export const draftOrderCheckoutSchema = z.union([
 ])
 
 export type DraftOrderCheckoutData = z.infer<typeof draftOrderCheckoutSchema>
+
+export const createDraftOrderBodySchema = z
+  .object({
+    cart: revalidateCartBodySchema,
+    checkout: draftOrderCheckoutSchema,
+  })
+  .strict()
+
+export type CreateDraftOrderBody = z.infer<typeof createDraftOrderBodySchema>

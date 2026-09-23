@@ -4,6 +4,7 @@ export type PublicSiteSettingsRow = {
   contact_phone: string | null
   contact_email: string | null
   contact_address: string | null
+  delivery_fee_cents: string
 }
 
 export async function findPublicSiteSettings() {
@@ -12,7 +13,8 @@ export async function findPublicSiteSettings() {
       SELECT
         contact_phone,
         contact_email,
-        contact_address
+        contact_address,
+        delivery_fee_cents::text AS delivery_fee_cents
       FROM site_settings
       WHERE id = 1
       LIMIT 1

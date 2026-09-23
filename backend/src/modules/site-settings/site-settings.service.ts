@@ -8,6 +8,7 @@ export type PublicSiteSettings = {
   phone: string | null
   email: string | null
   address: string | null
+  deliveryFeeCents: string
 }
 
 export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
@@ -25,6 +26,7 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
     phone: settings.contact_phone,
     email: settings.contact_email,
     address: settings.contact_address,
+    deliveryFeeCents: settings.delivery_fee_cents,
   }
 }
 
