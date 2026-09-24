@@ -218,7 +218,7 @@ function AdminOrdersPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-[62rem] w-full text-left text-sm">
+            <table className="min-w-[68rem] w-full text-left text-sm">
               <thead className="bg-brand-gray-50 text-muted-foreground">
                 <tr>
                   <th className="px-5 py-3 font-medium">Commande</th>
@@ -228,6 +228,7 @@ function AdminOrdersPage() {
                   <th className="px-5 py-3 font-medium">Traitement</th>
                   <th className="px-5 py-3 font-medium">Réception</th>
                   <th className="px-5 py-3 text-right font-medium">Montant</th>
+                  <th className="px-5 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
 
@@ -272,6 +273,15 @@ function AdminOrdersPage() {
 
                     <td className="px-5 py-4 text-right font-medium">
                       {formatPrice(order.totalCents, order.currency)}
+                    </td>
+
+                    <td className="px-5 py-4 text-right">
+                      <a
+                        href={`/admin/commandes/${order.id}`}
+                        className="inline-flex min-h-10 items-center rounded-md border border-brand-black px-4 text-sm font-medium text-brand-black transition-colors hover:bg-brand-gray-50"
+                      >
+                        Ouvrir
+                      </a>
                     </td>
                   </tr>
                 ))}

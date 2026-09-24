@@ -31,6 +31,7 @@ import { Route as AdminReservationsRouteImport } from './routes/admin.reservatio
 import { Route as CommandeTrackingTokenRouteImport } from './routes/commande.$trackingToken'
 import { Route as ProduitsProductIdRouteImport } from './routes/produits.$productId'
 import { Route as ReservationProductIdRouteImport } from './routes/reservation.$productId'
+import { Route as AdminCommandesOrderIdRouteImport } from './routes/admin.commandes_.$orderId'
 import { Route as AdminProduitsProductIdRouteImport } from './routes/admin.produits_.$productId'
 import { Route as AdminProduitsNouveauRouteImport } from './routes/admin.produits_.nouveau'
 
@@ -144,6 +145,11 @@ const ReservationProductIdRoute = ReservationProductIdRouteImport.update({
   path: '/reservation/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCommandesOrderIdRoute = AdminCommandesOrderIdRouteImport.update({
+  id: '/commandes_/$orderId',
+  path: '/commandes/$orderId',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProduitsProductIdRoute = AdminProduitsProductIdRouteImport.update({
   id: '/produits_/$productId',
   path: '/produits/$productId',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/produits/$productId': typeof ProduitsProductIdRoute
   '/reservation/$productId': typeof ReservationProductIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/commandes/$orderId': typeof AdminCommandesOrderIdRoute
   '/admin/produits/$productId': typeof AdminProduitsProductIdRoute
   '/admin/produits/nouveau': typeof AdminProduitsNouveauRoute
 }
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/produits/$productId': typeof ProduitsProductIdRoute
   '/reservation/$productId': typeof ReservationProductIdRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/commandes/$orderId': typeof AdminCommandesOrderIdRoute
   '/admin/produits/$productId': typeof AdminProduitsProductIdRoute
   '/admin/produits/nouveau': typeof AdminProduitsNouveauRoute
 }
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/produits/$productId': typeof ProduitsProductIdRoute
   '/reservation/$productId': typeof ReservationProductIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/commandes_/$orderId': typeof AdminCommandesOrderIdRoute
   '/admin/produits_/$productId': typeof AdminProduitsProductIdRoute
   '/admin/produits_/nouveau': typeof AdminProduitsNouveauRoute
 }
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/produits/$productId'
     | '/reservation/$productId'
     | '/admin/'
+    | '/admin/commandes/$orderId'
     | '/admin/produits/$productId'
     | '/admin/produits/nouveau'
   fileRoutesByTo: FileRoutesByTo
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/produits/$productId'
     | '/reservation/$productId'
     | '/admin'
+    | '/admin/commandes/$orderId'
     | '/admin/produits/$productId'
     | '/admin/produits/nouveau'
   id:
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/produits/$productId'
     | '/reservation/$productId'
     | '/admin/'
+    | '/admin/commandes_/$orderId'
     | '/admin/produits_/$productId'
     | '/admin/produits_/nouveau'
   fileRoutesById: FileRoutesById
@@ -487,6 +499,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReservationProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/commandes_/$orderId': {
+      id: '/admin/commandes_/$orderId'
+      path: '/commandes/$orderId'
+      fullPath: '/admin/commandes/$orderId'
+      preLoaderRoute: typeof AdminCommandesOrderIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/produits_/$productId': {
       id: '/admin/produits_/$productId'
       path: '/produits/$productId'
@@ -512,6 +531,7 @@ interface AdminRouteChildren {
   AdminReprisesRoute: typeof AdminReprisesRoute
   AdminReservationsRoute: typeof AdminReservationsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminCommandesOrderIdRoute: typeof AdminCommandesOrderIdRoute
   AdminProduitsProductIdRoute: typeof AdminProduitsProductIdRoute
   AdminProduitsNouveauRoute: typeof AdminProduitsNouveauRoute
 }
@@ -524,6 +544,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReprisesRoute: AdminReprisesRoute,
   AdminReservationsRoute: AdminReservationsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminCommandesOrderIdRoute: AdminCommandesOrderIdRoute,
   AdminProduitsProductIdRoute: AdminProduitsProductIdRoute,
   AdminProduitsNouveauRoute: AdminProduitsNouveauRoute,
 }
