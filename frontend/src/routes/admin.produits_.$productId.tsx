@@ -203,6 +203,8 @@ function AdminProductEditPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<ProductFieldErrors>({})
 
   useEffect(() => {
@@ -505,6 +507,39 @@ function AdminProductEditPage() {
       }
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  async function handleDeleteProduct() {
+    if (!product || isDeleting || isSubmitting) {
+      return
+    }
+
+    const confirmed = window.confirm(
+      'Supprimer ce vélo du catalogue ? Il restera conservé dans la base de données et dans les historiques existants.',
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setDeleteError(null)
+    setIsDeleting(true)
+
+    try {
+      await apiRequest(`/admin/products/${productId}`, {
+        method: 'DELETE',
+      })
+
+      window.location.assign('/admin/produits')
+    } catch (error) {
+      if (error instanceof ApiClientError) {
+        setDeleteError(error.message)
+      } else {
+        setDeleteError('Impossible de supprimer ce vélo.')
+      }
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -974,6 +1009,53 @@ function AdminProductEditPage() {
             </div>
           </div>
         </form>
+
+        <div className="mt-8 rounded-xl border border-destructive/30 bg-destructive/5 p-5 lg:p-6">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="max-w-2xl">
+              <h3 className="font-medium text-destructive">
+                Supprimer ce vélo
+              </h3>
+              <p className="type-secondary mt-2 text-muted-foreground">
+                Le vélo disparaîtra du catalogue et ne pourra plus être modifié
+                depuis cette page. Ses données et les historiques existants
+                resteront conservés.
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isDeleting || isSubmitting}
+              onClick={() => void handleDeleteProduct()}
+              className="w-full sm:w-auto"
+            >
+              {isDeleting ? (
+                <>
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className="size-4 animate-spin"
+                  />
+                  Suppression…
+                </>
+              ) : (
+                <>
+                  <Trash2 aria-hidden="true" className="size-4" />
+                  Supprimer ce vélo
+                </>
+              )}
+            </Button>
+          </div>
+
+          {deleteError ? (
+            <p
+              role="alert"
+              className="mt-4 rounded-lg border border-destructive/30 bg-background p-4 text-sm text-destructive"
+            >
+              {deleteError}
+            </p>
+          ) : null}
+        </div>
       </div>
     </AdminShell>
   )

@@ -10,6 +10,7 @@ import type {
 import {
   createAdminProduct,
   createProductReference,
+  deleteAdminProduct,
   getAdminProduct,
   getAdminProductReferences,
   updateAdminProductDetails,
@@ -82,6 +83,21 @@ export const updateAdminProductController: RequestHandler<
   const input = res.locals.validated.body as UpdateAdminProductBody
 
   const product = await updateAdminProductDetails(params.productId, input)
+
+  res.status(200).json({
+    data: product,
+  })
+}
+
+export const deleteAdminProductController: RequestHandler<
+  Record<string, string>,
+  unknown,
+  unknown,
+  unknown,
+  ValidationLocals
+> = async (_req, res) => {
+  const params = res.locals.validated.params as PublicProductParams
+  const product = await deleteAdminProduct(params.productId)
 
   res.status(200).json({
     data: product,

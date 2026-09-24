@@ -1,5 +1,6 @@
 import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
+import { hasActiveReservation } from '../reservations/reservations.repository.js'
 import {
   findActiveProductReference,
   findAdminProductById,
@@ -9,6 +10,7 @@ import {
   insertAdminProductSpecs,
   lockAdminProductById,
   replaceAdminProductSpecs,
+  softDeleteAdminProduct,
   updateAdminProduct,
   upsertProductReference,
   type AdminProductRow,
@@ -221,6 +223,51 @@ export async function updateAdminProductDetails(
     await client.query('COMMIT')
 
     return toAdminProductDetail(product, specs)
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+export type SoftDeletedAdminProduct = {
+  id: string
+  deletedAt: string
+}
+
+export async function deleteAdminProduct(
+  productId: string,
+): Promise<SoftDeletedAdminProduct> {
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const product = await lockAdminProductById(client, productId)
+
+    if (!product) {
+      throw new AppError(404, 'NOT_FOUND', 'Produit introuvable')
+    }
+
+    const activeReservation = await hasActiveReservation(client, productId)
+
+    if (activeReservation) {
+      throw new AppError(
+        409,
+        'CONFLICT',
+        'Ce vélo possède une réservation active. Annulez d’abord la réservation.',
+      )
+    }
+
+    const deletedProduct = await softDeleteAdminProduct(client, productId)
+
+    await client.query('COMMIT')
+
+    return {
+      id: deletedProduct.id,
+      deletedAt: deletedProduct.deleted_at.toISOString(),
+    }
   } catch (error) {
     await client.query('ROLLBACK').catch(() => undefined)
     throw error

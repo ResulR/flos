@@ -408,3 +408,37 @@ export async function replaceAdminProductSpecs(
 
   return insertAdminProductSpecs(client, productId, specs)
 }
+
+export type SoftDeletedAdminProductRow = {
+  id: string
+  deleted_at: Date
+}
+
+export async function softDeleteAdminProduct(
+  client: PoolClient,
+  productId: string,
+): Promise<SoftDeletedAdminProductRow> {
+  const result = await client.query<SoftDeletedAdminProductRow>(
+    `
+      UPDATE products
+      SET
+        is_active = false,
+        deleted_at = now(),
+        updated_at = now()
+      WHERE id = $1::bigint
+        AND deleted_at IS NULL
+      RETURNING
+        id::text AS id,
+        deleted_at
+    `,
+    [productId],
+  )
+
+  const product = result.rows[0]
+
+  if (!product) {
+    throw new Error('Product soft delete returned no row')
+  }
+
+  return product
+}

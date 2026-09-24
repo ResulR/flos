@@ -5,6 +5,7 @@ import { publicProductParamsSchema } from './products.schemas.js'
 import {
   createAdminProductController,
   createProductReferenceController,
+  deleteAdminProductController,
   getAdminProductController,
   getAdminProductReferencesController,
   updateAdminProductController,
@@ -50,4 +51,12 @@ adminProductsRouter.patch(
     body: updateAdminProductBodySchema,
   }),
   updateAdminProductController,
+)
+
+adminProductsRouter.delete(
+  '/:productId',
+  validateRequest({
+    params: publicProductParamsSchema,
+  }),
+  deleteAdminProductController,
 )
