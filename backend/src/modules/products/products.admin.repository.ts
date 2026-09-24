@@ -442,3 +442,45 @@ export async function softDeleteAdminProduct(
 
   return product
 }
+
+export type AdminProductListRow = {
+  id: string
+  brand: string
+  model: string
+  bike_type: string
+  condition: string
+  year: number | null
+  price_cents: string
+  status: AdminProductStatus
+  is_active: boolean
+  updated_at: Date
+}
+
+export async function findAdminProducts(): Promise<AdminProductListRow[]> {
+  const result = await db.query<AdminProductListRow>(
+    `
+      SELECT
+        product.id::text AS id,
+        brand.name AS brand,
+        product.model,
+        bike_type.name AS bike_type,
+        condition.name AS condition,
+        product.year,
+        product.price_cents::text AS price_cents,
+        product.status,
+        product.is_active,
+        product.updated_at
+      FROM products AS product
+      INNER JOIN product_brands AS brand
+        ON brand.id = product.brand_id
+      INNER JOIN bike_types AS bike_type
+        ON bike_type.id = product.bike_type_id
+      INNER JOIN bike_conditions AS condition
+        ON condition.id = product.condition_id
+      WHERE product.deleted_at IS NULL
+      ORDER BY product.updated_at DESC, product.id DESC
+    `,
+  )
+
+  return result.rows
+}

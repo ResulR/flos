@@ -5,6 +5,7 @@ import {
   findActiveProductReference,
   findAdminProductById,
   findAdminProductReferences,
+  findAdminProducts,
   findAdminProductSpecs,
   insertAdminProduct,
   insertAdminProductSpecs,
@@ -274,4 +275,34 @@ export async function deleteAdminProduct(
   } finally {
     client.release()
   }
+}
+
+export type AdminProductListItem = {
+  id: string
+  brand: string
+  model: string
+  bikeType: string
+  condition: string
+  year: number | null
+  priceCents: string
+  status: AdminProductStatus
+  isActive: boolean
+  updatedAt: string
+}
+
+export async function listAdminProducts(): Promise<AdminProductListItem[]> {
+  const products = await findAdminProducts()
+
+  return products.map((product) => ({
+    id: product.id,
+    brand: product.brand,
+    model: product.model,
+    bikeType: product.bike_type,
+    condition: product.condition,
+    year: product.year,
+    priceCents: product.price_cents,
+    status: product.status,
+    isActive: product.is_active,
+    updatedAt: product.updated_at.toISOString(),
+  }))
 }

@@ -13,6 +13,7 @@ import {
   deleteAdminProduct,
   getAdminProduct,
   getAdminProductReferences,
+  listAdminProducts,
   updateAdminProductDetails,
 } from './products.admin.service.js'
 
@@ -101,5 +102,16 @@ export const deleteAdminProductController: RequestHandler<
 
   res.status(200).json({
     data: product,
+  })
+}
+
+export const listAdminProductsController: RequestHandler = async (
+  _req,
+  res,
+) => {
+  const products = await listAdminProducts()
+
+  res.status(200).json({
+    data: products,
   })
 }

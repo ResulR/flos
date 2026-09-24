@@ -8,6 +8,7 @@ import {
   deleteAdminProductController,
   getAdminProductController,
   getAdminProductReferencesController,
+  listAdminProductsController,
   updateAdminProductController,
 } from './products.admin.controller.js'
 import {
@@ -19,6 +20,8 @@ import {
 export const adminProductsRouter = Router()
 
 adminProductsRouter.get('/references', getAdminProductReferencesController)
+
+adminProductsRouter.get('/', listAdminProductsController)
 
 adminProductsRouter.post(
   '/references',
