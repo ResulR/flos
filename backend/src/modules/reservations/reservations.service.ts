@@ -9,8 +9,10 @@ import {
   insertReservation,
   lockProductForReservation,
   lockReservationContact,
+  lockReservationForAdminCancellation,
   markDueReservationsExpired,
   markProductReserved,
+  markReservationCancelled,
   releaseProductsWithoutActiveReservation,
 } from './reservations.repository.js'
 import type { CreateReservationInput } from './reservations.schemas.js'
@@ -151,6 +153,69 @@ export async function expireDueReservations(): Promise<ExpireDueReservationsResu
     return {
       expiredReservations: productIds.length,
       releasedProducts,
+    }
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+export type CancelledReservation = {
+  id: string
+  productId: string
+  status: 'cancelled'
+  productStatus: 'available'
+}
+
+export async function cancelReservationManually(
+  reservationId: string,
+): Promise<CancelledReservation> {
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const reservation = await lockReservationForAdminCancellation(
+      client,
+      reservationId,
+    )
+
+    if (!reservation) {
+      throw new AppError(404, 'NOT_FOUND', 'Réservation introuvable')
+    }
+
+    if (reservation.status === 'expired' || reservation.is_expired) {
+      throw new AppError(410, 'RESERVATION_EXPIRED', 'La réservation a expiré')
+    }
+
+    if (reservation.status !== 'active') {
+      throw new AppError(
+        409,
+        'CONFLICT',
+        'La réservation ne peut plus être annulée',
+      )
+    }
+
+    await markReservationCancelled(client, reservation.id)
+
+    const releasedProducts = await releaseProductsWithoutActiveReservation(
+      client,
+      [reservation.product_id],
+    )
+
+    if (releasedProducts !== 1) {
+      throw new Error('Reserved product was not released')
+    }
+
+    await client.query('COMMIT')
+
+    return {
+      id: reservation.id,
+      productId: reservation.product_id,
+      status: 'cancelled',
+      productStatus: 'available',
     }
   } catch (error) {
     await client.query('ROLLBACK').catch(() => undefined)

@@ -9,3 +9,10 @@ export const convertReservationStoreSaleParamsSchema = z
 export type ConvertReservationStoreSaleParams = z.infer<
   typeof convertReservationStoreSaleParamsSchema
 >
+
+export const cancelReservationParamsSchema =
+  convertReservationStoreSaleParamsSchema
+
+export type CancelReservationParams = z.infer<
+  typeof cancelReservationParamsSchema
+>
