@@ -1,3 +1,5 @@
+import type { PoolClient } from 'pg'
+
 import { db } from '../../config/database.js'
 import type { CreateTradeInInput } from './trade-ins.schemas.js'
 
@@ -58,6 +60,64 @@ export async function insertTradeIn(
 
   if (!tradeIn) {
     throw new Error('Trade-in insert returned no row')
+  }
+
+  return tradeIn
+}
+
+export type TradeInStatus =
+  'pending' | 'reviewing' | 'accepted' | 'rejected' | 'closed'
+
+export type TradeInStatusRow = {
+  id: string
+  status: TradeInStatus
+  updated_at: Date
+}
+
+export async function lockTradeInForStatusUpdate(
+  client: PoolClient,
+  tradeInId: string,
+): Promise<TradeInStatusRow | null> {
+  const result = await client.query<TradeInStatusRow>(
+    `
+      SELECT
+        id::text AS id,
+        status,
+        updated_at
+      FROM trade_ins
+      WHERE id = $1::bigint
+      FOR UPDATE
+    `,
+    [tradeInId],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export async function setTradeInStatus(
+  client: PoolClient,
+  tradeInId: string,
+  status: 'reviewing' | 'accepted' | 'rejected',
+): Promise<TradeInStatusRow> {
+  const result = await client.query<TradeInStatusRow>(
+    `
+      UPDATE trade_ins
+      SET
+        status = $2,
+        updated_at = now()
+      WHERE id = $1::bigint
+      RETURNING
+        id::text AS id,
+        status,
+        updated_at
+    `,
+    [tradeInId, status],
+  )
+
+  const tradeIn = result.rows[0]
+
+  if (!tradeIn) {
+    throw new Error('Trade-in status update returned no row')
   }
 
   return tradeIn
