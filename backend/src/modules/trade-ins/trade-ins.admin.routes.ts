@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { validateRequest } from '../../http/validation.js'
 import {
   getTradeInInternalNoteController,
+  listAdminTradeInsController,
   updateTradeInInternalNoteController,
   updateTradeInOfferController,
   updateTradeInStatusController,
@@ -17,6 +18,8 @@ import {
 } from './trade-ins.admin.schemas.js'
 
 export const adminTradeInsRouter = Router()
+
+adminTradeInsRouter.get('/', listAdminTradeInsController)
 
 adminTradeInsRouter.patch(
   '/:tradeInId/status',

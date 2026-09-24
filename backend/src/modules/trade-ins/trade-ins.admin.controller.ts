@@ -11,6 +11,7 @@ import type {
 } from './trade-ins.admin.schemas.js'
 import {
   getTradeInInternalNote,
+  listAdminTradeIns,
   setTradeInInternalNote,
   setTradeInOffer,
   updateTradeInStatus,
@@ -82,5 +83,16 @@ export const updateTradeInInternalNoteController: RequestHandler<
 
   res.status(200).json({
     data: tradeIn,
+  })
+}
+
+export const listAdminTradeInsController: RequestHandler = async (
+  _req,
+  res,
+) => {
+  const tradeIns = await listAdminTradeIns()
+
+  res.status(200).json({
+    data: tradeIns,
   })
 }

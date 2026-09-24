@@ -197,3 +197,44 @@ export async function updateTradeInInternalNote(
 
   return result.rows[0] ?? null
 }
+
+export type AdminTradeInListRow = {
+  id: string
+  customer_first_name: string
+  customer_last_name: string
+  customer_email: string
+  customer_phone: string
+  bike_brand: string | null
+  bike_model: string | null
+  bike_year: number | null
+  desired_price_cents: string | null
+  offered_price_cents: string | null
+  status: TradeInStatus
+  created_at: Date
+  updated_at: Date
+}
+
+export async function findAdminTradeIns(): Promise<AdminTradeInListRow[]> {
+  const result = await db.query<AdminTradeInListRow>(
+    `
+      SELECT
+        id::text AS id,
+        customer_first_name,
+        customer_last_name,
+        customer_email,
+        customer_phone,
+        bike_brand,
+        bike_model,
+        bike_year,
+        desired_price_cents::text AS desired_price_cents,
+        offered_price_cents::text AS offered_price_cents,
+        status,
+        created_at,
+        updated_at
+      FROM trade_ins
+      ORDER BY created_at DESC, id DESC
+    `,
+  )
+
+  return result.rows
+}

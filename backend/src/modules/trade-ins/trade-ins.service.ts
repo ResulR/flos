@@ -1,6 +1,7 @@
 import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
 import {
+  findAdminTradeIns,
   findTradeInInternalNote,
   insertTradeIn,
   lockTradeInForStatusUpdate,
@@ -151,4 +152,40 @@ export async function setTradeInInternalNote(
     internalNote: tradeIn.internal_note,
     updatedAt: tradeIn.updated_at.toISOString(),
   }
+}
+
+export type AdminTradeInListItem = {
+  id: string
+  customerFirstName: string
+  customerLastName: string
+  customerEmail: string
+  customerPhone: string
+  bikeBrand: string | null
+  bikeModel: string | null
+  bikeYear: number | null
+  desiredPriceCents: string | null
+  offeredPriceCents: string | null
+  status: 'pending' | 'reviewing' | 'accepted' | 'rejected' | 'closed'
+  createdAt: string
+  updatedAt: string
+}
+
+export async function listAdminTradeIns(): Promise<AdminTradeInListItem[]> {
+  const tradeIns = await findAdminTradeIns()
+
+  return tradeIns.map((tradeIn) => ({
+    id: tradeIn.id,
+    customerFirstName: tradeIn.customer_first_name,
+    customerLastName: tradeIn.customer_last_name,
+    customerEmail: tradeIn.customer_email,
+    customerPhone: tradeIn.customer_phone,
+    bikeBrand: tradeIn.bike_brand,
+    bikeModel: tradeIn.bike_model,
+    bikeYear: tradeIn.bike_year,
+    desiredPriceCents: tradeIn.desired_price_cents,
+    offeredPriceCents: tradeIn.offered_price_cents,
+    status: tradeIn.status,
+    createdAt: tradeIn.created_at.toISOString(),
+    updatedAt: tradeIn.updated_at.toISOString(),
+  }))
 }
