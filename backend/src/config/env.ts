@@ -7,6 +7,9 @@ const envSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(4700),
   SESSION_SECRET: z.string().min(32),
+  ADMIN_COOKIE_SECURE: z
+    .enum(['true', 'false'])
+    .transform((value) => value === 'true'),
   DATABASE_URL: z.string().url(),
   PRODUCT_MEDIA_ROOT: z.string().min(1),
 })

@@ -1,11 +1,71 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { LockKeyhole } from 'lucide-react'
+import { LoaderCircle, LockKeyhole } from 'lucide-react'
+import { type FormEvent, useState } from 'react'
+
+import { Button } from '@/components/ui/button'
+import { TextField } from '@/components/ui/field'
+import { ApiClientError, apiRequest } from '@/lib/api'
 
 export const Route = createFileRoute('/admin/')({
   component: AdminLoginPage,
 })
 
+type AdminLoginResponse = {
+  authenticated: true
+}
+
+type AdminLoginFieldErrors = Partial<Record<'email' | 'password', string>>
+
 function AdminLoginPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<AdminLoginFieldErrors>({})
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (isSubmitting) {
+      return
+    }
+
+    const formData = new FormData(event.currentTarget)
+
+    setIsSubmitting(true)
+    setSubmitError(null)
+    setFieldErrors({})
+
+    try {
+      await apiRequest<AdminLoginResponse>('/admin/auth/login', {
+        method: 'POST',
+        body: {
+          email: String(formData.get('email') ?? ''),
+          password: String(formData.get('password') ?? ''),
+        },
+      })
+
+      window.location.assign('/admin/dashboard')
+    } catch (error) {
+      if (error instanceof ApiClientError) {
+        if (error.code === 'VALIDATION_ERROR') {
+          setFieldErrors({
+            email: error.fields?.['body.email'],
+            password: error.fields?.['body.password'],
+          })
+
+          setSubmitError('Vérifiez les informations saisies.')
+        } else if (error.code === 'UNAUTHENTICATED') {
+          setSubmitError('Email ou mot de passe incorrect.')
+        } else {
+          setSubmitError(error.message)
+        }
+      } else {
+        setSubmitError('Impossible de vous connecter pour le moment.')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <main className="grid min-h-screen bg-brand-gray-50 lg:grid-cols-2">
       <section className="hidden overflow-hidden bg-brand-black text-brand-white lg:flex lg:flex-col lg:justify-between lg:p-12">
@@ -53,30 +113,54 @@ function AdminLoginPage() {
             </p>
           </div>
 
-          <form className="mt-8 space-y-5">
-            <label className="block">
-              <span className="type-label mb-2 block">Email</span>
-              <input type="email" className="form-control w-full" />
-            </label>
+          <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
+            <TextField
+              label="Email"
+              name="email"
+              type="email"
+              autoComplete="username"
+              required
+              disabled={isSubmitting}
+              error={fieldErrors.email}
+            />
 
-            <label className="block">
-              <span className="type-label mb-2 block">Mot de passe</span>
-              <input type="password" className="form-control w-full" />
-            </label>
+            <TextField
+              label="Mot de passe"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              disabled={isSubmitting}
+              error={fieldErrors.password}
+            />
 
-            <div
-              role="status"
-              className="rounded-md border border-border bg-brand-gray-50 px-4 py-3 text-sm text-muted-foreground"
+            {submitError ? (
+              <p
+                role="alert"
+                className="rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+              >
+                {submitError}
+              </p>
+            ) : null}
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={isSubmitting}
             >
-              En cas d’échec, un message neutre sera affiché ici.
-            </div>
-
-            <button
-              type="button"
-              className="type-button inline-flex min-h-12 w-full items-center justify-center rounded-md bg-primary px-6 text-primary-foreground hover:bg-brand-red-dark"
-            >
-              Se connecter
-            </button>
+              {isSubmitting ? (
+                <>
+                  <LoaderCircle
+                    aria-hidden="true"
+                    className="size-4 animate-spin"
+                  />
+                  Connexion…
+                </>
+              ) : (
+                'Se connecter'
+              )}
+            </Button>
           </form>
         </div>
       </section>
