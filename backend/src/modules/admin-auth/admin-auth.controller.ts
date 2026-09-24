@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express'
 
 import type { ValidationLocals } from '../../http/validation.js'
+import type { AdminAuthLocals } from './admin-auth.middleware.js'
 import type { AdminLoginInput } from './admin-auth.schemas.js'
 import { loginAdmin, logoutAdmin } from './admin-auth.service.js'
 import {
@@ -46,6 +47,20 @@ export const adminLogoutController: RequestHandler = async (req, res) => {
   res.status(200).json({
     data: {
       authenticated: false,
+    },
+  })
+}
+
+export const adminSessionController: RequestHandler<
+  Record<string, string>,
+  unknown,
+  unknown,
+  unknown,
+  AdminAuthLocals
+> = async (_req, res) => {
+  res.status(200).json({
+    data: {
+      authenticated: true,
     },
   })
 }

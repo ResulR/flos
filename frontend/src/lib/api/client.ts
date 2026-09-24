@@ -32,6 +32,35 @@ function isApiError(value: unknown): value is ApiError {
   )
 }
 
+function redirectExpiredAdminSession(
+  path: string,
+  status: number,
+  code?: string,
+) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (status !== 401 || code !== 'UNAUTHENTICATED') {
+    return
+  }
+
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+
+  if (!normalizedPath.startsWith('/admin/')) {
+    return
+  }
+
+  if (
+    normalizedPath === '/admin/auth/login' ||
+    normalizedPath === '/admin/auth/session'
+  ) {
+    return
+  }
+
+  window.location.replace('/admin/')
+}
+
 async function parseJson(response: Response) {
   try {
     return await response.json()
@@ -79,6 +108,8 @@ export async function apiRequest<T>(
 
   if (!response.ok) {
     if (isApiError(payload)) {
+      redirectExpiredAdminSession(path, response.status, payload.error.code)
+
       throw new ApiClientError({
         kind: 'http',
         message: payload.error.message,
