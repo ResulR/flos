@@ -47,3 +47,29 @@ export async function invalidateAdminSession(
 
   return (result.rowCount ?? 0) > 0
 }
+
+export type ActiveAdminSession = {
+  id: number
+  email: string
+}
+
+export async function findActiveAdminSessionById(
+  adminId: number,
+  sessionVersion: number,
+): Promise<ActiveAdminSession | null> {
+  const result = await db.query<ActiveAdminSession>(
+    `
+      SELECT
+        id,
+        email
+      FROM admin_users
+      WHERE id = $1
+        AND session_version = $2
+        AND is_active = true
+      LIMIT 1
+    `,
+    [adminId, sessionVersion],
+  )
+
+  return result.rows[0] ?? null
+}

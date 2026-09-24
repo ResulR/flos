@@ -8,6 +8,7 @@ import { env } from './config/env.js'
 import { logger } from './config/logger.js'
 import { errorHandler } from './http/error-handler.js'
 import { requestLogger } from './http/request-logger.js'
+import { requireAdminSession } from './modules/admin-auth/admin-auth.middleware.js'
 import { adminAuthRouter } from './modules/admin-auth/admin-auth.routes.js'
 import { cartRouter } from './modules/cart/cart.routes.js'
 import { ordersRouter } from './modules/orders/orders.routes.js'
@@ -30,6 +31,8 @@ app.get('/health', (_req, res) => {
 })
 
 app.use('/admin/auth', adminAuthRouter)
+app.use('/admin', requireAdminSession)
+
 app.use('/products', productsRouter)
 app.use('/site-settings', siteSettingsRouter)
 app.use('/cart', cartRouter)
