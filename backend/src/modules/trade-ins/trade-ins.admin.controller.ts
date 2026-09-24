@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express'
 
 import type { ValidationLocals } from '../../http/validation.js'
 import type {
+  AdminTradeInParams,
   TradeInInternalNoteParams,
   UpdateTradeInInternalNoteBody,
   UpdateTradeInOfferBody,
@@ -10,6 +11,7 @@ import type {
   UpdateTradeInStatusParams,
 } from './trade-ins.admin.schemas.js'
 import {
+  getAdminTradeIn,
   getTradeInInternalNote,
   listAdminTradeIns,
   setTradeInInternalNote,
@@ -94,5 +96,20 @@ export const listAdminTradeInsController: RequestHandler = async (
 
   res.status(200).json({
     data: tradeIns,
+  })
+}
+
+export const getAdminTradeInController: RequestHandler<
+  Record<string, string>,
+  unknown,
+  unknown,
+  unknown,
+  ValidationLocals
+> = async (_req, res) => {
+  const { tradeInId } = res.locals.validated.params as AdminTradeInParams
+  const tradeIn = await getAdminTradeIn(tradeInId)
+
+  res.status(200).json({
+    data: tradeIn,
   })
 }

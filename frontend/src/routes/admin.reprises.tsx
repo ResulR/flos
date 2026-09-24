@@ -213,7 +213,7 @@ function AdminTradeInsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-[70rem] w-full text-left text-sm">
+            <table className="min-w-[76rem] w-full text-left text-sm">
               <thead className="bg-brand-gray-50 text-muted-foreground">
                 <tr>
                   <th className="px-5 py-3 font-medium">Reprise</th>
@@ -224,6 +224,7 @@ function AdminTradeInsPage() {
                     Prix souhaité
                   </th>
                   <th className="px-5 py-3 font-medium">Statut</th>
+                  <th className="px-5 py-3 text-right font-medium">Action</th>
                 </tr>
               </thead>
 
@@ -269,6 +270,15 @@ function AdminTradeInsPage() {
                       <StatusBadge tone={statusTone(tradeIn.status)}>
                         {statusLabel(tradeIn.status)}
                       </StatusBadge>
+                    </td>
+
+                    <td className="px-5 py-4 text-right">
+                      <a
+                        href={`/admin/reprises/${tradeIn.id}`}
+                        className="inline-flex min-h-10 items-center rounded-md border border-brand-black px-4 text-sm font-medium text-brand-black transition-colors hover:bg-brand-gray-50"
+                      >
+                        Ouvrir
+                      </a>
                     </td>
                   </tr>
                 ))}

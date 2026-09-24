@@ -34,6 +34,7 @@ import { Route as ReservationProductIdRouteImport } from './routes/reservation.$
 import { Route as AdminCommandesOrderIdRouteImport } from './routes/admin.commandes_.$orderId'
 import { Route as AdminProduitsProductIdRouteImport } from './routes/admin.produits_.$productId'
 import { Route as AdminProduitsNouveauRouteImport } from './routes/admin.produits_.nouveau'
+import { Route as AdminReprisesTradeInIdRouteImport } from './routes/admin.reprises_.$tradeInId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -160,6 +161,11 @@ const AdminProduitsNouveauRoute = AdminProduitsNouveauRouteImport.update({
   path: '/produits/nouveau',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminReprisesTradeInIdRoute = AdminReprisesTradeInIdRouteImport.update({
+  id: '/reprises_/$tradeInId',
+  path: '/reprises/$tradeInId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/admin/commandes/$orderId': typeof AdminCommandesOrderIdRoute
   '/admin/produits/$productId': typeof AdminProduitsProductIdRoute
   '/admin/produits/nouveau': typeof AdminProduitsNouveauRoute
+  '/admin/reprises/$tradeInId': typeof AdminReprisesTradeInIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/admin/commandes/$orderId': typeof AdminCommandesOrderIdRoute
   '/admin/produits/$productId': typeof AdminProduitsProductIdRoute
   '/admin/produits/nouveau': typeof AdminProduitsNouveauRoute
+  '/admin/reprises/$tradeInId': typeof AdminReprisesTradeInIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/admin/commandes_/$orderId': typeof AdminCommandesOrderIdRoute
   '/admin/produits_/$productId': typeof AdminProduitsProductIdRoute
   '/admin/produits_/nouveau': typeof AdminProduitsNouveauRoute
+  '/admin/reprises_/$tradeInId': typeof AdminReprisesTradeInIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/admin/commandes/$orderId'
     | '/admin/produits/$productId'
     | '/admin/produits/nouveau'
+    | '/admin/reprises/$tradeInId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/admin/commandes/$orderId'
     | '/admin/produits/$productId'
     | '/admin/produits/nouveau'
+    | '/admin/reprises/$tradeInId'
   id:
     | '__root__'
     | '/'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/admin/commandes_/$orderId'
     | '/admin/produits_/$productId'
     | '/admin/produits_/nouveau'
+    | '/admin/reprises_/$tradeInId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -520,6 +532,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProduitsNouveauRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/reprises_/$tradeInId': {
+      id: '/admin/reprises_/$tradeInId'
+      path: '/reprises/$tradeInId'
+      fullPath: '/admin/reprises/$tradeInId'
+      preLoaderRoute: typeof AdminReprisesTradeInIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
@@ -534,6 +553,7 @@ interface AdminRouteChildren {
   AdminCommandesOrderIdRoute: typeof AdminCommandesOrderIdRoute
   AdminProduitsProductIdRoute: typeof AdminProduitsProductIdRoute
   AdminProduitsNouveauRoute: typeof AdminProduitsNouveauRoute
+  AdminReprisesTradeInIdRoute: typeof AdminReprisesTradeInIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -547,6 +567,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCommandesOrderIdRoute: AdminCommandesOrderIdRoute,
   AdminProduitsProductIdRoute: AdminProduitsProductIdRoute,
   AdminProduitsNouveauRoute: AdminProduitsNouveauRoute,
+  AdminReprisesTradeInIdRoute: AdminReprisesTradeInIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

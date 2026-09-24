@@ -1,6 +1,7 @@
 import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
 import {
+  findAdminTradeInById,
   findAdminTradeIns,
   findTradeInInternalNote,
   insertTradeIn,
@@ -188,4 +189,48 @@ export async function listAdminTradeIns(): Promise<AdminTradeInListItem[]> {
     createdAt: tradeIn.created_at.toISOString(),
     updatedAt: tradeIn.updated_at.toISOString(),
   }))
+}
+
+export type AdminTradeInDetail = {
+  id: string
+  customerFirstName: string
+  customerLastName: string
+  customerEmail: string
+  customerPhone: string
+  bikeBrand: string | null
+  bikeModel: string | null
+  bikeYear: number | null
+  description: string | null
+  desiredPriceCents: string | null
+  offeredPriceCents: string | null
+  status: 'pending' | 'reviewing' | 'accepted' | 'rejected' | 'closed'
+  createdAt: string
+  updatedAt: string
+}
+
+export async function getAdminTradeIn(
+  tradeInId: string,
+): Promise<AdminTradeInDetail> {
+  const tradeIn = await findAdminTradeInById(tradeInId)
+
+  if (!tradeIn) {
+    throw new AppError(404, 'NOT_FOUND', 'Demande de reprise introuvable')
+  }
+
+  return {
+    id: tradeIn.id,
+    customerFirstName: tradeIn.customer_first_name,
+    customerLastName: tradeIn.customer_last_name,
+    customerEmail: tradeIn.customer_email,
+    customerPhone: tradeIn.customer_phone,
+    bikeBrand: tradeIn.bike_brand,
+    bikeModel: tradeIn.bike_model,
+    bikeYear: tradeIn.bike_year,
+    description: tradeIn.description,
+    desiredPriceCents: tradeIn.desired_price_cents,
+    offeredPriceCents: tradeIn.offered_price_cents,
+    status: tradeIn.status,
+    createdAt: tradeIn.created_at.toISOString(),
+    updatedAt: tradeIn.updated_at.toISOString(),
+  }
 }

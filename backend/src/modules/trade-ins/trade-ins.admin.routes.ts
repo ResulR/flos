@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import { validateRequest } from '../../http/validation.js'
 import {
+  getAdminTradeInController,
   getTradeInInternalNoteController,
   listAdminTradeInsController,
   updateTradeInInternalNoteController,
@@ -9,6 +10,7 @@ import {
   updateTradeInStatusController,
 } from './trade-ins.admin.controller.js'
 import {
+  adminTradeInParamsSchema,
   tradeInInternalNoteParamsSchema,
   updateTradeInInternalNoteBodySchema,
   updateTradeInOfferBodySchema,
@@ -20,6 +22,14 @@ import {
 export const adminTradeInsRouter = Router()
 
 adminTradeInsRouter.get('/', listAdminTradeInsController)
+
+adminTradeInsRouter.get(
+  '/:tradeInId',
+  validateRequest({
+    params: adminTradeInParamsSchema,
+  }),
+  getAdminTradeInController,
+)
 
 adminTradeInsRouter.patch(
   '/:tradeInId/status',

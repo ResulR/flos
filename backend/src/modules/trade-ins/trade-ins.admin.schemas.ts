@@ -54,3 +54,7 @@ export type TradeInInternalNoteParams = z.infer<
 export type UpdateTradeInInternalNoteBody = z.infer<
   typeof updateTradeInInternalNoteBodySchema
 >
+
+export const adminTradeInParamsSchema = updateTradeInStatusParamsSchema
+
+export type AdminTradeInParams = z.infer<typeof adminTradeInParamsSchema>
