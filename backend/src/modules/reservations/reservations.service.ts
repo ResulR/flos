@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
 import {
+  findAdminReservations,
   findReservationByPurchaseTokenHash,
   hasActiveReservation,
   hasActiveReservationForContact,
@@ -223,4 +224,46 @@ export async function cancelReservationManually(
   } finally {
     client.release()
   }
+}
+
+export type AdminReservationListItem = {
+  id: string
+  productId: string
+  productBrand: string
+  productModel: string
+  customerFirstName: string
+  customerLastName: string
+  customerEmail: string
+  customerPhone: string
+  status: 'active' | 'cancelled' | 'expired' | 'converted'
+  startsAt: string
+  expiresAt: string
+  createdAt: string
+  updatedAt: string
+  cancelledAt: string | null
+  convertedAt: string | null
+}
+
+export async function listAdminReservations(): Promise<
+  AdminReservationListItem[]
+> {
+  const reservations = await findAdminReservations()
+
+  return reservations.map((reservation) => ({
+    id: reservation.id,
+    productId: reservation.product_id,
+    productBrand: reservation.product_brand,
+    productModel: reservation.product_model,
+    customerFirstName: reservation.customer_first_name,
+    customerLastName: reservation.customer_last_name,
+    customerEmail: reservation.customer_email,
+    customerPhone: reservation.customer_phone,
+    status: reservation.status,
+    startsAt: reservation.starts_at.toISOString(),
+    expiresAt: reservation.expires_at.toISOString(),
+    createdAt: reservation.created_at.toISOString(),
+    updatedAt: reservation.updated_at.toISOString(),
+    cancelledAt: reservation.cancelled_at?.toISOString() ?? null,
+    convertedAt: reservation.converted_at?.toISOString() ?? null,
+  }))
 }

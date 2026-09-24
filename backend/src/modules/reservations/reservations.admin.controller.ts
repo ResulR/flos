@@ -2,7 +2,10 @@ import type { RequestHandler } from 'express'
 
 import type { ValidationLocals } from '../../http/validation.js'
 import { convertReservationToStoreSale } from '../orders/orders.service.js'
-import { cancelReservationManually } from './reservations.service.js'
+import {
+  cancelReservationManually,
+  listAdminReservations,
+} from './reservations.service.js'
 import type {
   CancelReservationParams,
   ConvertReservationStoreSaleParams,
@@ -39,5 +42,16 @@ export const cancelReservationController: RequestHandler<
 
   res.status(200).json({
     data: reservation,
+  })
+}
+
+export const listAdminReservationsController: RequestHandler = async (
+  _req,
+  res,
+) => {
+  const reservations = await listAdminReservations()
+
+  res.status(200).json({
+    data: reservations,
   })
 }

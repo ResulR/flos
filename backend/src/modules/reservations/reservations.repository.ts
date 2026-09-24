@@ -448,3 +448,62 @@ export async function markReservationCancelled(
     throw new Error('Reservation cancellation updated no row')
   }
 }
+
+export type AdminReservationListRow = {
+  id: string
+  product_id: string
+  customer_first_name: string
+  customer_last_name: string
+  customer_email: string
+  customer_phone: string
+  status: 'active' | 'cancelled' | 'expired' | 'converted'
+  starts_at: Date
+  expires_at: Date
+  created_at: Date
+  updated_at: Date
+  cancelled_at: Date | null
+  converted_at: Date | null
+  product_brand: string
+  product_model: string
+}
+
+export async function findAdminReservations(): Promise<
+  AdminReservationListRow[]
+> {
+  const result = await db.query<AdminReservationListRow>(
+    `
+      SELECT
+        reservation.id::text AS id,
+        reservation.product_id::text AS product_id,
+        reservation.customer_first_name,
+        reservation.customer_last_name,
+        reservation.customer_email,
+        reservation.customer_phone,
+        reservation.status,
+        reservation.starts_at,
+        reservation.expires_at,
+        reservation.created_at,
+        reservation.updated_at,
+        reservation.cancelled_at,
+        reservation.converted_at,
+        brand.name AS product_brand,
+        product.model AS product_model
+      FROM reservations AS reservation
+      INNER JOIN products AS product
+        ON product.id = reservation.product_id
+      INNER JOIN product_brands AS brand
+        ON brand.id = product.brand_id
+      ORDER BY
+        CASE WHEN reservation.status = 'active' THEN 0 ELSE 1 END ASC,
+        CASE
+          WHEN reservation.status = 'active' THEN reservation.expires_at
+        END ASC,
+        CASE
+          WHEN reservation.status <> 'active' THEN reservation.updated_at
+        END DESC,
+        reservation.id DESC
+    `,
+  )
+
+  return result.rows
+}

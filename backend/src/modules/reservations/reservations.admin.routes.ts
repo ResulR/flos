@@ -4,6 +4,7 @@ import { validateRequest } from '../../http/validation.js'
 import {
   cancelReservationController,
   convertReservationStoreSaleController,
+  listAdminReservationsController,
 } from './reservations.admin.controller.js'
 import {
   cancelReservationParamsSchema,
@@ -11,6 +12,8 @@ import {
 } from './reservations.admin.schemas.js'
 
 export const adminReservationsRouter = Router()
+
+adminReservationsRouter.get('/', listAdminReservationsController)
 
 adminReservationsRouter.post(
   '/:reservationId/store-sale',
