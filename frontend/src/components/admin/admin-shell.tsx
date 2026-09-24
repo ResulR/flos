@@ -5,12 +5,15 @@ import {
   ClipboardList,
   Gauge,
   HandCoins,
+  LogOut,
   Menu,
   PackageCheck,
   Settings,
   X,
 } from 'lucide-react'
 import { useState } from 'react'
+
+import { apiRequest } from '@/lib/api'
 
 const navigation = [
   {
@@ -55,6 +58,30 @@ export function AdminShell({
   children: ReactNode
 }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [logoutError, setLogoutError] = useState<string | null>(null)
+
+  async function handleLogout() {
+    if (isLoggingOut) {
+      return
+    }
+
+    setIsLoggingOut(true)
+    setLogoutError(null)
+
+    try {
+      await apiRequest<{ authenticated: false }>('/admin/auth/logout', {
+        method: 'POST',
+      })
+
+      window.location.assign('/admin/')
+    } catch {
+      setLogoutError(
+        'Impossible de vous déconnecter pour le moment. Réessayez.',
+      )
+      setIsLoggingOut(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-brand-gray-50 text-foreground lg:grid lg:grid-cols-[15rem_1fr]">
@@ -97,6 +124,27 @@ export function AdminShell({
                   Compte unique V1
                 </p>
               </div>
+
+              {logoutError ? (
+                <p
+                  role="alert"
+                  className="hidden max-w-52 text-right text-xs text-destructive md:block"
+                >
+                  {logoutError}
+                </p>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+              >
+                <LogOut aria-hidden="true" className="size-4" />
+                <span className="hidden sm:inline">
+                  {isLoggingOut ? 'Déconnexion…' : 'Déconnexion'}
+                </span>
+              </button>
 
               <button
                 type="button"

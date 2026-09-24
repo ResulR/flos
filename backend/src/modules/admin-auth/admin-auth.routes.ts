@@ -1,7 +1,10 @@
 import { Router } from 'express'
 
 import { validateRequest } from '../../http/validation.js'
-import { adminLoginController } from './admin-auth.controller.js'
+import {
+  adminLoginController,
+  adminLogoutController,
+} from './admin-auth.controller.js'
 import { adminLoginSchema } from './admin-auth.schemas.js'
 
 export const adminAuthRouter = Router()
@@ -11,3 +14,5 @@ adminAuthRouter.post(
   validateRequest({ body: adminLoginSchema }),
   adminLoginController,
 )
+
+adminAuthRouter.post('/logout', adminLogoutController)

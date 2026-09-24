@@ -28,3 +28,22 @@ export async function findAdminUserByEmail(
 
   return result.rows[0] ?? null
 }
+
+export async function invalidateAdminSession(
+  adminId: number,
+  sessionVersion: number,
+): Promise<boolean> {
+  const result = await db.query(
+    `
+      UPDATE admin_users
+      SET
+        session_version = session_version + 1,
+        updated_at = now()
+      WHERE id = $1
+        AND session_version = $2
+    `,
+    [adminId, sessionVersion],
+  )
+
+  return (result.rowCount ?? 0) > 0
+}
