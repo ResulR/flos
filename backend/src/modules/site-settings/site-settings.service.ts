@@ -2,6 +2,7 @@ import { AppError } from '../../http/errors.js'
 import {
   findDeliveryFeeCents,
   findPublicSiteSettings,
+  updateSiteSettings,
 } from './site-settings.repository.js'
 
 export type PublicSiteSettings = {
@@ -42,4 +43,28 @@ export async function getDeliveryFeeCents(): Promise<string> {
   }
 
   return deliveryFeeCents
+}
+
+export async function updateAdminSiteSettings(input: {
+  phone: string | null
+  email: string | null
+  address: string | null
+  deliveryFeeCents: number
+}): Promise<PublicSiteSettings> {
+  const settings = await updateSiteSettings(input)
+
+  if (!settings) {
+    throw new AppError(
+      500,
+      'INTERNAL_ERROR',
+      'Les paramètres du site sont indisponibles',
+    )
+  }
+
+  return {
+    phone: settings.contact_phone,
+    email: settings.contact_email,
+    address: settings.contact_address,
+    deliveryFeeCents: settings.delivery_fee_cents,
+  }
 }
