@@ -5,8 +5,10 @@ import { AppError } from '../../http/errors.js'
 import { revalidateCart } from '../cart/cart.service.js'
 import type { RevalidateCartBody } from '../cart/cart.schemas.js'
 import {
+  lockReservationForAdminSale,
   lockReservationForPurchase,
   lockReservedProductForOrder,
+  markProductSold,
   markReservationConverted,
 } from '../reservations/reservations.repository.js'
 import { getDeliveryFeeCents } from '../site-settings/site-settings.service.js'
@@ -19,6 +21,7 @@ import {
   findPublicOrderItems,
   insertDraftOrder,
   insertDraftOrderItems,
+  insertStoreSaleOrder,
 } from './orders.repository.js'
 
 export type CreateDraftOrderInput = {
@@ -286,5 +289,95 @@ export async function getPublicOrderTracking(
       productName: item.product_name,
       unitPriceCents: item.unit_price_cents,
     })),
+  }
+}
+
+export type ConvertedStoreSale = {
+  orderId: string
+  reservationId: string
+  productId: string
+  status: 'picked_up'
+  paymentStatus: 'paid'
+  totalCents: string
+  currency: 'EUR'
+}
+
+export async function convertReservationToStoreSale(
+  reservationId: string,
+): Promise<ConvertedStoreSale> {
+  const trackingToken = createTrackingToken()
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const reservation = await lockReservationForAdminSale(client, reservationId)
+
+    if (!reservation) {
+      throw new AppError(404, 'NOT_FOUND', 'Réservation introuvable')
+    }
+
+    if (reservation.status === 'expired' || reservation.is_expired) {
+      throw new AppError(410, 'RESERVATION_EXPIRED', 'La réservation a expiré')
+    }
+
+    if (reservation.status !== 'active') {
+      throw new AppError(
+        409,
+        'CONFLICT',
+        'La réservation ne peut plus être convertie',
+      )
+    }
+
+    const product = await lockReservedProductForOrder(
+      client,
+      reservation.product_id,
+    )
+
+    if (
+      !product ||
+      !product.is_active ||
+      product.deleted_at !== null ||
+      product.status !== 'reserved'
+    ) {
+      throw new AppError(409, 'PRODUCT_NOT_AVAILABLE', 'Produit indisponible')
+    }
+
+    const item = {
+      productId: product.id,
+      productName: `${product.brand} ${product.model}`,
+      unitPriceCents: product.price_cents,
+    }
+
+    const order = await insertStoreSaleOrder(client, {
+      customerFirstName: reservation.customer_first_name,
+      customerLastName: reservation.customer_last_name,
+      customerEmail: reservation.customer_email,
+      customerPhone: reservation.customer_phone,
+      subtotalCents: product.price_cents,
+      publicTrackingTokenHash: hashTrackingToken(trackingToken),
+      reservationId: reservation.id,
+    })
+
+    await insertDraftOrderItems(client, order.id, [item])
+    await markReservationConverted(client, reservation.id)
+    await markProductSold(client, product.id)
+
+    await client.query('COMMIT')
+
+    return {
+      orderId: order.id,
+      reservationId: reservation.id,
+      productId: product.id,
+      status: order.status,
+      paymentStatus: order.payment_status,
+      totalCents: order.total_cents,
+      currency: order.currency,
+    }
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
+    throw error
+  } finally {
+    client.release()
   }
 }

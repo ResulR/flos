@@ -13,6 +13,7 @@ import { adminAuthRouter } from './modules/admin-auth/admin-auth.routes.js'
 import { cartRouter } from './modules/cart/cart.routes.js'
 import { ordersRouter } from './modules/orders/orders.routes.js'
 import { productsRouter } from './modules/products/products.routes.js'
+import { adminReservationsRouter } from './modules/reservations/reservations.admin.routes.js'
 import { reservationsRouter } from './modules/reservations/reservations.routes.js'
 import { siteSettingsRouter } from './modules/site-settings/site-settings.routes.js'
 import { tradeInsRouter } from './modules/trade-ins/trade-ins.routes.js'
@@ -32,6 +33,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/admin/auth', adminAuthRouter)
 app.use('/admin', requireAdminSession)
+app.use('/admin/reservations', adminReservationsRouter)
 
 app.use('/products', productsRouter)
 app.use('/site-settings', siteSettingsRouter)

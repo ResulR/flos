@@ -353,3 +353,50 @@ export async function releaseProductsWithoutActiveReservation(
 
   return result.rowCount ?? 0
 }
+
+export async function lockReservationForAdminSale(
+  client: PoolClient,
+  reservationId: string,
+): Promise<ReservationPurchaseRow | null> {
+  const result = await client.query<ReservationPurchaseRow>(
+    `
+      SELECT
+        id::text AS id,
+        product_id::text AS product_id,
+        customer_first_name,
+        customer_last_name,
+        customer_email,
+        customer_phone,
+        expires_at,
+        status,
+        expires_at <= now() AS is_expired
+      FROM reservations
+      WHERE id = $1::bigint
+      FOR UPDATE
+    `,
+    [reservationId],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export async function markProductSold(
+  client: PoolClient,
+  productId: string,
+): Promise<void> {
+  const result = await client.query(
+    `
+      UPDATE products
+      SET
+        status = 'sold',
+        updated_at = now()
+      WHERE id = $1::bigint
+        AND status = 'reserved'
+    `,
+    [productId],
+  )
+
+  if (result.rowCount !== 1) {
+    throw new Error('Product sale updated no row')
+  }
+}

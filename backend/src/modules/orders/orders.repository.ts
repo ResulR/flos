@@ -208,3 +208,98 @@ export async function findPublicOrderItems(
 
   return result.rows
 }
+
+export type StoreSaleOrderInsert = {
+  customerFirstName: string
+  customerLastName: string
+  customerEmail: string
+  customerPhone: string
+  subtotalCents: string
+  publicTrackingTokenHash: string
+  reservationId: string
+}
+
+export type StoreSaleOrderRow = {
+  id: string
+  status: 'picked_up'
+  payment_status: 'paid'
+  subtotal_cents: string
+  delivery_fee_cents: string
+  total_cents: string
+  currency: 'EUR'
+}
+
+export async function insertStoreSaleOrder(
+  client: PoolClient,
+  input: StoreSaleOrderInsert,
+): Promise<StoreSaleOrderRow> {
+  const result = await client.query<StoreSaleOrderRow>(
+    `
+      INSERT INTO orders (
+        customer_first_name,
+        customer_last_name,
+        customer_email,
+        customer_phone,
+        fulfillment_method,
+        delivery_address_line1,
+        delivery_address_line2,
+        delivery_postal_code,
+        delivery_city,
+        delivery_country,
+        status,
+        payment_status,
+        subtotal_cents,
+        delivery_fee_cents,
+        total_cents,
+        currency,
+        public_tracking_token_hash,
+        reservation_id
+      )
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        'pickup',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        'picked_up',
+        'paid',
+        $5::bigint,
+        0,
+        $5::bigint,
+        'EUR',
+        $6,
+        $7::bigint
+      )
+      RETURNING
+        id::text AS id,
+        status,
+        payment_status,
+        subtotal_cents::text AS subtotal_cents,
+        delivery_fee_cents::text AS delivery_fee_cents,
+        total_cents::text AS total_cents,
+        currency
+    `,
+    [
+      input.customerFirstName,
+      input.customerLastName,
+      input.customerEmail,
+      input.customerPhone,
+      input.subtotalCents,
+      input.publicTrackingTokenHash,
+      input.reservationId,
+    ],
+  )
+
+  const order = result.rows[0]
+
+  if (!order) {
+    throw new Error('Store sale order insert returned no row')
+  }
+
+  return order
+}
