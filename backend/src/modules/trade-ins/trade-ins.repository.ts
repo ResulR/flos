@@ -150,3 +150,50 @@ export async function updateTradeInOffer(
 
   return result.rows[0] ?? null
 }
+
+export type TradeInInternalNoteRow = {
+  id: string
+  internal_note: string | null
+  updated_at: Date
+}
+
+export async function findTradeInInternalNote(
+  tradeInId: string,
+): Promise<TradeInInternalNoteRow | null> {
+  const result = await db.query<TradeInInternalNoteRow>(
+    `
+      SELECT
+        id::text AS id,
+        internal_note,
+        updated_at
+      FROM trade_ins
+      WHERE id = $1::bigint
+      LIMIT 1
+    `,
+    [tradeInId],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export async function updateTradeInInternalNote(
+  tradeInId: string,
+  internalNote: string | null,
+): Promise<TradeInInternalNoteRow | null> {
+  const result = await db.query<TradeInInternalNoteRow>(
+    `
+      UPDATE trade_ins
+      SET
+        internal_note = $2,
+        updated_at = now()
+      WHERE id = $1::bigint
+      RETURNING
+        id::text AS id,
+        internal_note,
+        updated_at
+    `,
+    [tradeInId, internalNote],
+  )
+
+  return result.rows[0] ?? null
+}

@@ -1,9 +1,11 @@
 import { db } from '../../config/database.js'
 import { AppError } from '../../http/errors.js'
 import {
+  findTradeInInternalNote,
   insertTradeIn,
   lockTradeInForStatusUpdate,
   setTradeInStatus,
+  updateTradeInInternalNote,
   updateTradeInOffer,
 } from './trade-ins.repository.js'
 import type { CreateTradeInInput } from './trade-ins.schemas.js'
@@ -108,6 +110,45 @@ export async function setTradeInOffer(
   return {
     id: tradeIn.id,
     offeredPriceCents: tradeIn.offered_price_cents,
+    updatedAt: tradeIn.updated_at.toISOString(),
+  }
+}
+
+export type TradeInInternalNote = {
+  id: string
+  internalNote: string | null
+  updatedAt: string
+}
+
+export async function getTradeInInternalNote(
+  tradeInId: string,
+): Promise<TradeInInternalNote> {
+  const tradeIn = await findTradeInInternalNote(tradeInId)
+
+  if (!tradeIn) {
+    throw new AppError(404, 'NOT_FOUND', 'Demande de reprise introuvable')
+  }
+
+  return {
+    id: tradeIn.id,
+    internalNote: tradeIn.internal_note,
+    updatedAt: tradeIn.updated_at.toISOString(),
+  }
+}
+
+export async function setTradeInInternalNote(
+  tradeInId: string,
+  internalNote: string | null,
+): Promise<TradeInInternalNote> {
+  const tradeIn = await updateTradeInInternalNote(tradeInId, internalNote)
+
+  if (!tradeIn) {
+    throw new AppError(404, 'NOT_FOUND', 'Demande de reprise introuvable')
+  }
+
+  return {
+    id: tradeIn.id,
+    internalNote: tradeIn.internal_note,
     updatedAt: tradeIn.updated_at.toISOString(),
   }
 }

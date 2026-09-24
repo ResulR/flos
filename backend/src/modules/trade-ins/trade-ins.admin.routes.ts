@@ -2,10 +2,14 @@ import { Router } from 'express'
 
 import { validateRequest } from '../../http/validation.js'
 import {
+  getTradeInInternalNoteController,
+  updateTradeInInternalNoteController,
   updateTradeInOfferController,
   updateTradeInStatusController,
 } from './trade-ins.admin.controller.js'
 import {
+  tradeInInternalNoteParamsSchema,
+  updateTradeInInternalNoteBodySchema,
   updateTradeInOfferBodySchema,
   updateTradeInOfferParamsSchema,
   updateTradeInStatusBodySchema,
@@ -30,4 +34,21 @@ adminTradeInsRouter.patch(
     body: updateTradeInOfferBodySchema,
   }),
   updateTradeInOfferController,
+)
+
+adminTradeInsRouter.get(
+  '/:tradeInId/internal-note',
+  validateRequest({
+    params: tradeInInternalNoteParamsSchema,
+  }),
+  getTradeInInternalNoteController,
+)
+
+adminTradeInsRouter.patch(
+  '/:tradeInId/internal-note',
+  validateRequest({
+    params: tradeInInternalNoteParamsSchema,
+    body: updateTradeInInternalNoteBodySchema,
+  }),
+  updateTradeInInternalNoteController,
 )

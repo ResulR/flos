@@ -38,3 +38,19 @@ export type UpdateTradeInOfferParams = z.infer<
 export type UpdateTradeInOfferBody = z.infer<
   typeof updateTradeInOfferBodySchema
 >
+
+export const tradeInInternalNoteParamsSchema = updateTradeInStatusParamsSchema
+
+export const updateTradeInInternalNoteBodySchema = z
+  .object({
+    internalNote: z.string().trim().min(1, 'Note interne invalide').nullable(),
+  })
+  .strict()
+
+export type TradeInInternalNoteParams = z.infer<
+  typeof tradeInInternalNoteParamsSchema
+>
+
+export type UpdateTradeInInternalNoteBody = z.infer<
+  typeof updateTradeInInternalNoteBodySchema
+>
