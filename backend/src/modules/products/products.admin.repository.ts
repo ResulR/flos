@@ -4,6 +4,7 @@ import { db } from '../../config/database.js'
 import type {
   CreateAdminProductBody,
   ProductReferenceType,
+  UpdateAdminProductBody,
 } from './products.admin.schemas.js'
 
 export type ProductReferenceRow = {
@@ -117,6 +118,99 @@ export async function findActiveProductReference(
   return result.rows[0] ?? null
 }
 
+export type AdminProductStatus = 'available' | 'reserved' | 'sold' | 'hidden'
+
+export type AdminProductRow = {
+  id: string
+  brand_id: string
+  bike_type_id: string
+  condition_id: string
+  model: string
+  year: number | null
+  description: string
+  price_cents: string
+  status: AdminProductStatus
+  is_active: boolean
+  created_at: Date
+  updated_at: Date
+}
+
+const adminProductSelect = `
+  SELECT
+    id::text AS id,
+    brand_id::text AS brand_id,
+    bike_type_id::text AS bike_type_id,
+    condition_id::text AS condition_id,
+    model,
+    year,
+    description,
+    price_cents::text AS price_cents,
+    status,
+    is_active,
+    created_at,
+    updated_at
+  FROM products
+`
+
+export async function findAdminProductById(
+  productId: string,
+): Promise<AdminProductRow | null> {
+  const result = await db.query<AdminProductRow>(
+    `
+      ${adminProductSelect}
+      WHERE id = $1::bigint
+        AND deleted_at IS NULL
+      LIMIT 1
+    `,
+    [productId],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export async function lockAdminProductById(
+  client: PoolClient,
+  productId: string,
+): Promise<AdminProductRow | null> {
+  const result = await client.query<AdminProductRow>(
+    `
+      ${adminProductSelect}
+      WHERE id = $1::bigint
+        AND deleted_at IS NULL
+      LIMIT 1
+      FOR UPDATE
+    `,
+    [productId],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export type AdminProductSpecRow = {
+  id: string
+  label: string
+  value: string
+}
+
+export async function findAdminProductSpecs(
+  productId: string,
+): Promise<AdminProductSpecRow[]> {
+  const result = await db.query<AdminProductSpecRow>(
+    `
+      SELECT
+        id::text AS id,
+        label,
+        value
+      FROM product_specs
+      WHERE product_id = $1::bigint
+      ORDER BY display_order ASC, id ASC
+    `,
+    [productId],
+  )
+
+  return result.rows
+}
+
 export type CreatedProductRow = {
   id: string
   brand_id: string
@@ -203,7 +297,7 @@ export type CreatedProductSpecRow = {
 export async function insertAdminProductSpecs(
   client: PoolClient,
   productId: string,
-  specs: CreateAdminProductBody['specs'],
+  specs: CreateAdminProductBody['specs'] | UpdateAdminProductBody['specs'],
 ): Promise<CreatedProductSpecRow[]> {
   const createdSpecs: CreatedProductSpecRow[] = []
 
@@ -240,4 +334,77 @@ export async function insertAdminProductSpecs(
   }
 
   return createdSpecs
+}
+
+export async function updateAdminProduct(
+  client: PoolClient,
+  productId: string,
+  input: UpdateAdminProductBody,
+  status: AdminProductStatus,
+): Promise<AdminProductRow> {
+  const result = await client.query<AdminProductRow>(
+    `
+      UPDATE products
+      SET
+        brand_id = $2::bigint,
+        bike_type_id = $3::bigint,
+        condition_id = $4::bigint,
+        model = $5,
+        year = $6,
+        description = $7,
+        price_cents = $8::bigint,
+        status = $9,
+        updated_at = now()
+      WHERE id = $1::bigint
+        AND deleted_at IS NULL
+      RETURNING
+        id::text AS id,
+        brand_id::text AS brand_id,
+        bike_type_id::text AS bike_type_id,
+        condition_id::text AS condition_id,
+        model,
+        year,
+        description,
+        price_cents::text AS price_cents,
+        status,
+        is_active,
+        created_at,
+        updated_at
+    `,
+    [
+      productId,
+      input.brandId,
+      input.bikeTypeId,
+      input.conditionId,
+      input.model,
+      input.year,
+      input.description,
+      input.priceCents,
+      status,
+    ],
+  )
+
+  const product = result.rows[0]
+
+  if (!product) {
+    throw new Error('Product update returned no row')
+  }
+
+  return product
+}
+
+export async function replaceAdminProductSpecs(
+  client: PoolClient,
+  productId: string,
+  specs: UpdateAdminProductBody['specs'],
+): Promise<CreatedProductSpecRow[]> {
+  await client.query(
+    `
+      DELETE FROM product_specs
+      WHERE product_id = $1::bigint
+    `,
+    [productId],
+  )
+
+  return insertAdminProductSpecs(client, productId, specs)
 }

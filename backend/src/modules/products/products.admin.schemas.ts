@@ -18,36 +18,51 @@ const productSpecSchema = z
   })
   .strict()
 
+const productSpecsSchema = z
+  .array(productSpecSchema)
+  .superRefine((specs, context) => {
+    const labels = new Set<string>()
+
+    for (const [index, spec] of specs.entries()) {
+      if (labels.has(spec.label)) {
+        context.addIssue({
+          code: 'custom',
+          message: 'Libellé de caractéristique dupliqué',
+          path: [index, 'label'],
+        })
+      }
+
+      labels.add(spec.label)
+    }
+  })
+
+const editableProductFields = {
+  brandId: bigintIdSchema,
+  bikeTypeId: bigintIdSchema,
+  conditionId: bigintIdSchema,
+  model: z.string().trim().min(1, 'Modèle requis'),
+  year: z.number().int().min(0).nullable(),
+  description: z.string().trim().min(1, 'Description requise'),
+  priceCents: z
+    .number()
+    .int()
+    .min(0, 'Le prix doit être positif ou nul')
+    .max(Number.MAX_SAFE_INTEGER),
+  specs: productSpecsSchema,
+}
+
 export const createAdminProductBodySchema = z
   .object({
-    brandId: bigintIdSchema,
-    bikeTypeId: bigintIdSchema,
-    conditionId: bigintIdSchema,
-    model: z.string().trim().min(1, 'Modèle requis'),
-    year: z.number().int().min(0).nullable(),
-    description: z.string().trim().min(1, 'Description requise'),
-    priceCents: z
-      .number()
-      .int()
-      .min(0, 'Le prix doit être positif ou nul')
-      .max(Number.MAX_SAFE_INTEGER),
+    ...editableProductFields,
     status: z.enum(['available', 'hidden']),
     isActive: z.boolean(),
-    specs: z.array(productSpecSchema).superRefine((specs, context) => {
-      const labels = new Set<string>()
+  })
+  .strict()
 
-      for (const [index, spec] of specs.entries()) {
-        if (labels.has(spec.label)) {
-          context.addIssue({
-            code: 'custom',
-            message: 'Libellé de caractéristique dupliqué',
-            path: [index, 'label'],
-          })
-        }
-
-        labels.add(spec.label)
-      }
-    }),
+export const updateAdminProductBodySchema = z
+  .object({
+    ...editableProductFields,
+    status: z.enum(['available', 'hidden']).optional(),
   })
   .strict()
 
@@ -59,4 +74,8 @@ export type CreateProductReferenceBody = z.infer<
 
 export type CreateAdminProductBody = z.infer<
   typeof createAdminProductBodySchema
+>
+
+export type UpdateAdminProductBody = z.infer<
+  typeof updateAdminProductBodySchema
 >
