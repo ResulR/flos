@@ -19,3 +19,22 @@ export type UpdateTradeInStatusParams = z.infer<
 export type UpdateTradeInStatusBody = z.infer<
   typeof updateTradeInStatusBodySchema
 >
+
+export const updateTradeInOfferParamsSchema = updateTradeInStatusParamsSchema
+
+export const updateTradeInOfferBodySchema = z
+  .object({
+    offeredPriceCents: z
+      .number()
+      .int('Prix proposé invalide')
+      .nonnegative('Prix proposé invalide'),
+  })
+  .strict()
+
+export type UpdateTradeInOfferParams = z.infer<
+  typeof updateTradeInOfferParamsSchema
+>
+
+export type UpdateTradeInOfferBody = z.infer<
+  typeof updateTradeInOfferBodySchema
+>

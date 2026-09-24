@@ -122,3 +122,31 @@ export async function setTradeInStatus(
 
   return tradeIn
 }
+
+export type TradeInOfferRow = {
+  id: string
+  offered_price_cents: string | null
+  updated_at: Date
+}
+
+export async function updateTradeInOffer(
+  tradeInId: string,
+  offeredPriceCents: number,
+): Promise<TradeInOfferRow | null> {
+  const result = await db.query<TradeInOfferRow>(
+    `
+      UPDATE trade_ins
+      SET
+        offered_price_cents = $2::bigint,
+        updated_at = now()
+      WHERE id = $1::bigint
+      RETURNING
+        id::text AS id,
+        offered_price_cents::text AS offered_price_cents,
+        updated_at
+    `,
+    [tradeInId, offeredPriceCents],
+  )
+
+  return result.rows[0] ?? null
+}

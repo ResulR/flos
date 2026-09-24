@@ -4,6 +4,7 @@ import {
   insertTradeIn,
   lockTradeInForStatusUpdate,
   setTradeInStatus,
+  updateTradeInOffer,
 } from './trade-ins.repository.js'
 import type { CreateTradeInInput } from './trade-ins.schemas.js'
 
@@ -85,5 +86,28 @@ export async function updateTradeInStatus(
     throw error
   } finally {
     client.release()
+  }
+}
+
+export type UpdatedTradeInOffer = {
+  id: string
+  offeredPriceCents: string
+  updatedAt: string
+}
+
+export async function setTradeInOffer(
+  tradeInId: string,
+  offeredPriceCents: number,
+): Promise<UpdatedTradeInOffer> {
+  const tradeIn = await updateTradeInOffer(tradeInId, offeredPriceCents)
+
+  if (!tradeIn || tradeIn.offered_price_cents === null) {
+    throw new AppError(404, 'NOT_FOUND', 'Demande de reprise introuvable')
+  }
+
+  return {
+    id: tradeIn.id,
+    offeredPriceCents: tradeIn.offered_price_cents,
+    updatedAt: tradeIn.updated_at.toISOString(),
   }
 }
