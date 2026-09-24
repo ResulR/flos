@@ -17,6 +17,7 @@ import { adminProductsRouter } from './modules/products/products.admin.routes.js
 import { productsRouter } from './modules/products/products.routes.js'
 import { adminReservationsRouter } from './modules/reservations/reservations.admin.routes.js'
 import { reservationsRouter } from './modules/reservations/reservations.routes.js'
+import { adminSiteSettingsRouter } from './modules/site-settings/site-settings.admin.routes.js'
 import { siteSettingsRouter } from './modules/site-settings/site-settings.routes.js'
 import { adminTradeInsRouter } from './modules/trade-ins/trade-ins.admin.routes.js'
 import { tradeInsRouter } from './modules/trade-ins/trade-ins.routes.js'
@@ -40,6 +41,7 @@ app.use('/admin/reservations', adminReservationsRouter)
 app.use('/admin/products', adminProductsRouter)
 app.use('/admin/orders', adminOrdersRouter)
 app.use('/admin/trade-ins', adminTradeInsRouter)
+app.use('/admin/site-settings', adminSiteSettingsRouter)
 
 app.use('/products', productsRouter)
 app.use('/site-settings', siteSettingsRouter)
