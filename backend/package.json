@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "migrate": "tsx src/scripts/migrate.ts",
     "expire-reservations": "node dist/scripts/expire-reservations.js",
-    "test:reservation-concurrency": "tsx --test src/tests/reservation-concurrency.test.ts"
+    "test:reservation-concurrency": "tsx --test src/tests/reservation-concurrency.test.ts",
+    "test:image-file-validator": "tsx --test src/tests/image-file-validator.test.ts"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
