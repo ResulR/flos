@@ -1,7 +1,5 @@
-import { realpath } from 'node:fs/promises'
-import { resolve, sep } from 'node:path'
-
 import { env } from '../../config/env.js'
+import { PersistentFileStorage } from '../../storage/persistent-file-storage.js'
 import { AppError } from '../../http/errors.js'
 import {
   findPublicProductById,
@@ -107,6 +105,8 @@ export async function getPublicProduct(
   }
 }
 
+const productMediaStorage = new PersistentFileStorage(env.PRODUCT_MEDIA_ROOT)
+
 export type PublicProductMediaFile = {
   absolutePath: string
 }
@@ -121,28 +121,11 @@ export async function getPublicProductMediaFile(
     throw new AppError(404, 'NOT_FOUND', 'Média introuvable')
   }
 
-  const mediaRoot = await realpath(resolve(env.PRODUCT_MEDIA_ROOT))
-  const candidatePath = resolve(mediaRoot, media.file_path)
+  const absolutePath = await productMediaStorage.resolveExisting(
+    media.file_path,
+  )
 
-  if (
-    candidatePath !== mediaRoot &&
-    !candidatePath.startsWith(`${mediaRoot}${sep}`)
-  ) {
-    throw new AppError(404, 'NOT_FOUND', 'Média introuvable')
-  }
-
-  let absolutePath: string
-
-  try {
-    absolutePath = await realpath(candidatePath)
-  } catch {
-    throw new AppError(404, 'NOT_FOUND', 'Média introuvable')
-  }
-
-  if (
-    absolutePath === mediaRoot ||
-    !absolutePath.startsWith(`${mediaRoot}${sep}`)
-  ) {
+  if (!absolutePath) {
     throw new AppError(404, 'NOT_FOUND', 'Média introuvable')
   }
 
