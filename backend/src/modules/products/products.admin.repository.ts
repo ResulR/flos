@@ -543,6 +543,32 @@ export async function findAdminProductMediaById(
   return result.rows[0] ?? null
 }
 
+export async function deleteAdminProductMedia(
+  client: PoolClient,
+  productId: string,
+  mediaId: string,
+): Promise<AdminProductMediaRow | null> {
+  const result = await client.query<AdminProductMediaRow>(
+    `
+      DELETE FROM product_media AS media
+      USING products AS product
+      WHERE media.id = $1::bigint
+        AND media.product_id = $2::bigint
+        AND product.id = media.product_id
+        AND product.deleted_at IS NULL
+      RETURNING
+        media.id::text AS id,
+        media.product_id::text AS product_id,
+        media.file_path,
+        media.display_order,
+        media.created_at
+    `,
+    [mediaId, productId],
+  )
+
+  return result.rows[0] ?? null
+}
+
 export async function getAdminProductMediaStats(
   client: PoolClient,
   productId: string,

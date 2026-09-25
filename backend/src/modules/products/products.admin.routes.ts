@@ -10,6 +10,7 @@ import {
   createAdminProductController,
   createProductReferenceController,
   deleteAdminProductController,
+  deleteAdminProductMediaController,
   getAdminProductController,
   getAdminProductReferencesController,
   listAdminProductsController,
@@ -71,6 +72,14 @@ adminProductsRouter.get(
     params: publicProductMediaParamsSchema,
   }),
   getAdminProductMediaController,
+)
+
+adminProductsRouter.delete(
+  '/:productId/media/:mediaId',
+  validateRequest({
+    params: publicProductMediaParamsSchema,
+  }),
+  deleteAdminProductMediaController,
 )
 
 adminProductsRouter.patch(

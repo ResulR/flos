@@ -14,6 +14,7 @@ import {
 import { PersistentFileStorage } from '../../storage/persistent-file-storage.js'
 import { hasActiveReservation } from '../reservations/reservations.repository.js'
 import {
+  deleteAdminProductMedia,
   findActiveProductReference,
   findAdminProductById,
   findAdminProductMedia,
@@ -450,6 +451,40 @@ export async function uploadAdminProductMedia(
       })
     }
 
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+export type DeletedAdminProductMedia = {
+  id: string
+}
+
+export async function deleteAdminProductMediaFile(
+  productId: string,
+  mediaId: string,
+): Promise<DeletedAdminProductMedia> {
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const media = await deleteAdminProductMedia(client, productId, mediaId)
+
+    if (!media) {
+      throw new AppError(404, 'NOT_FOUND', 'Média introuvable')
+    }
+
+    await productMediaStorage.remove(media.file_path)
+
+    await client.query('COMMIT')
+
+    return {
+      id: media.id,
+    }
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
     throw error
   } finally {
     client.release()

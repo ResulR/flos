@@ -238,6 +238,11 @@ function AdminProductEditPage() {
   const [photoUploadMessage, setPhotoUploadMessage] = useState<string | null>(
     null,
   )
+  const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null)
+  const [photoDeleteError, setPhotoDeleteError] = useState<string | null>(null)
+  const [photoDeleteMessage, setPhotoDeleteMessage] = useState<string | null>(
+    null,
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -460,6 +465,52 @@ function AdminProductEditPage() {
       }
     } finally {
       setIsUploadingPhotos(false)
+    }
+  }
+
+  async function handleDeletePhoto(media: AdminProductMedia) {
+    if (!product || deletingPhotoId !== null || isUploadingPhotos) {
+      return
+    }
+
+    const confirmed = window.confirm('Supprimer cette photo du vélo ?')
+
+    if (!confirmed) {
+      return
+    }
+
+    setPhotoDeleteError(null)
+    setPhotoDeleteMessage(null)
+    setPhotoUploadError(null)
+    setPhotoUploadMessage(null)
+    setDeletingPhotoId(media.id)
+
+    try {
+      await apiRequest<{ id: string }>(
+        `/admin/products/${productId}/media/${media.id}`,
+        {
+          method: 'DELETE',
+        },
+      )
+
+      setProduct((current) =>
+        current
+          ? {
+              ...current,
+              media: current.media.filter((item) => item.id !== media.id),
+            }
+          : current,
+      )
+
+      setPhotoDeleteMessage('Photo supprimée.')
+    } catch (error) {
+      if (error instanceof ApiClientError) {
+        setPhotoDeleteError(error.message)
+      } else {
+        setPhotoDeleteError('Impossible de supprimer cette photo.')
+      }
+    } finally {
+      setDeletingPhotoId(null)
     }
   }
 
@@ -787,8 +838,31 @@ function AdminProductEditPage() {
                           className="size-full object-cover"
                         />
                       </div>
-                      <div className="px-3 py-2 text-xs text-muted-foreground">
-                        Photo {index + 1}
+                      <div className="flex items-center justify-between gap-2 px-3 py-2">
+                        <span className="text-xs text-muted-foreground">
+                          Photo {index + 1}
+                        </span>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 text-destructive hover:text-destructive"
+                          aria-label={`Supprimer la photo ${index + 1}`}
+                          disabled={
+                            deletingPhotoId !== null || isUploadingPhotos
+                          }
+                          onClick={() => void handleDeletePhoto(media)}
+                        >
+                          {deletingPhotoId === media.id ? (
+                            <LoaderCircle
+                              aria-hidden="true"
+                              className="size-4 animate-spin"
+                            />
+                          ) : (
+                            <Trash2 aria-hidden="true" className="size-4" />
+                          )}
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -825,7 +899,7 @@ function AdminProductEditPage() {
                     multiple
                     accept="image/jpeg,image/png,image/webp"
                     className="mt-3 block w-full text-sm"
-                    disabled={isUploadingPhotos}
+                    disabled={isUploadingPhotos || deletingPhotoId !== null}
                     onChange={handlePhotoSelection}
                   />
 
@@ -840,7 +914,11 @@ function AdminProductEditPage() {
                   <Button
                     type="button"
                     className="mt-4"
-                    disabled={selectedPhotos.length === 0 || isUploadingPhotos}
+                    disabled={
+                      selectedPhotos.length === 0 ||
+                      isUploadingPhotos ||
+                      deletingPhotoId !== null
+                    }
                     onClick={() => void handleUploadPhotos()}
                   >
                     {isUploadingPhotos ? (
@@ -880,6 +958,24 @@ function AdminProductEditPage() {
                   className="rounded-lg border border-border bg-background p-4 text-sm"
                 >
                   {photoUploadMessage}
+                </p>
+              ) : null}
+
+              {photoDeleteError ? (
+                <p
+                  role="alert"
+                  className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                >
+                  {photoDeleteError}
+                </p>
+              ) : null}
+
+              {photoDeleteMessage ? (
+                <p
+                  role="status"
+                  className="rounded-lg border border-border bg-background p-4 text-sm"
+                >
+                  {photoDeleteMessage}
                 </p>
               ) : null}
             </div>

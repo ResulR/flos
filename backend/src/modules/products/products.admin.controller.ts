@@ -15,6 +15,7 @@ import {
   createAdminProduct,
   createProductReference,
   deleteAdminProduct,
+  deleteAdminProductMediaFile,
   getAdminProduct,
   getAdminProductReferences,
   getAdminProductMediaFile,
@@ -138,6 +139,25 @@ export const uploadAdminProductMediaController: RequestHandler<
   const media = await uploadAdminProductMedia(params.productId, req.body)
 
   res.status(201).json({
+    data: media,
+  })
+}
+
+export const deleteAdminProductMediaController: RequestHandler<
+  Record<string, string>,
+  unknown,
+  unknown,
+  unknown,
+  ValidationLocals
+> = async (_req, res) => {
+  const params = res.locals.validated.params as PublicProductMediaParams
+
+  const media = await deleteAdminProductMediaFile(
+    params.productId,
+    params.mediaId,
+  )
+
+  res.status(200).json({
     data: media,
   })
 }
