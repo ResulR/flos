@@ -4,6 +4,21 @@ import { AppError } from './errors.js'
 
 export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
   void _next
+
+  if (
+    error &&
+    typeof error === 'object' &&
+    Reflect.get(error, 'type') === 'entity.too.large'
+  ) {
+    res.status(413).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Requête trop volumineuse.',
+      },
+    })
+
+    return
+  }
   if (error instanceof AppError) {
     res.status(error.statusCode).json({
       error: {

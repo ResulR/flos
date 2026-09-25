@@ -1,12 +1,25 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ArrowLeft, LoaderCircle, Plus, Save, Trash2 } from 'lucide-react'
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import {
+  ArrowLeft,
+  ImagePlus,
+  LoaderCircle,
+  Plus,
+  Save,
+  Trash2,
+} from 'lucide-react'
+import {
+  type ChangeEvent,
+  type FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
 import { AdminShell } from '@/components/admin/admin-shell'
 import { AdminPanel, StatusBadge } from '@/components/admin/admin-ui'
 import { Button } from '@/components/ui/button'
 import { Field, TextField, fieldControlClassName } from '@/components/ui/field'
-import { ApiClientError, apiRequest } from '@/lib/api'
+import { ApiClientError, apiRequest, buildApiUrl } from '@/lib/api'
 
 export const Route = createFileRoute('/admin/produits_/$productId')({
   component: AdminProductEditPage,
@@ -43,8 +56,19 @@ type AdminProduct = {
     label: string
     value: string
   }>
+  media: Array<{
+    id: string
+    imageUrl: string
+    displayOrder: number
+  }>
   createdAt: string
   updatedAt: string
+}
+
+type AdminProductMedia = {
+  id: string
+  imageUrl: string
+  displayOrder: number
 }
 
 type ProductFieldErrors = Partial<
@@ -207,6 +231,14 @@ function AdminProductEditPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<ProductFieldErrors>({})
 
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([])
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false)
+  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null)
+  const [photoUploadMessage, setPhotoUploadMessage] = useState<string | null>(
+    null,
+  )
+
   useEffect(() => {
     let cancelled = false
 
@@ -339,6 +371,96 @@ function AdminProductEditPage() {
           : spec,
       ),
     )
+  }
+
+  function handlePhotoSelection(event: ChangeEvent<HTMLInputElement>) {
+    if (!product) {
+      return
+    }
+
+    const files = Array.from(event.currentTarget.files ?? [])
+    const remainingSlots = 10 - product.media.length
+
+    setPhotoUploadError(null)
+    setPhotoUploadMessage(null)
+
+    if (files.length > remainingSlots) {
+      setSelectedPhotos([])
+      event.currentTarget.value = ''
+      setPhotoUploadError(
+        `Vous pouvez encore ajouter ${remainingSlots} photo${remainingSlots > 1 ? 's' : ''}.`,
+      )
+      return
+    }
+
+    setSelectedPhotos(files)
+  }
+
+  async function handleUploadPhotos() {
+    if (
+      !product ||
+      selectedPhotos.length === 0 ||
+      isUploadingPhotos ||
+      product.media.length >= 10
+    ) {
+      return
+    }
+
+    setPhotoUploadError(null)
+    setPhotoUploadMessage(null)
+    setIsUploadingPhotos(true)
+
+    const uploaded: AdminProductMedia[] = []
+
+    try {
+      for (const file of selectedPhotos) {
+        const media = await apiRequest<AdminProductMedia>(
+          `/admin/products/${productId}/media`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': file.type || 'application/octet-stream',
+            },
+            body: file,
+          },
+        )
+
+        uploaded.push(media)
+
+        setProduct((current) =>
+          current
+            ? {
+                ...current,
+                media: [...current.media, media].sort(
+                  (left, right) => left.displayOrder - right.displayOrder,
+                ),
+              }
+            : current,
+        )
+      }
+
+      setSelectedPhotos([])
+
+      if (photoInputRef.current) {
+        photoInputRef.current.value = ''
+      }
+
+      setPhotoUploadMessage(
+        `${uploaded.length} photo${uploaded.length > 1 ? 's' : ''} ajoutée${uploaded.length > 1 ? 's' : ''}.`,
+      )
+    } catch (error) {
+      if (error instanceof ApiClientError) {
+        setPhotoUploadError(error.message)
+      } else {
+        setPhotoUploadError('Impossible d’ajouter les photos.')
+      }
+
+      if (uploaded.length > 0) {
+        setSelectedPhotos((current) => current.slice(uploaded.length))
+      }
+    } finally {
+      setIsUploadingPhotos(false)
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -643,6 +765,125 @@ function AdminProductEditPage() {
               {statusLabel(product.status)}
             </StatusBadge>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <AdminPanel
+            title="Photos"
+            description={`${product.media.length}/10 photos enregistrées. Formats acceptés : JPEG, PNG et WebP. 10 Mo maximum par photo.`}
+          >
+            <div className="space-y-5 p-5 lg:p-6">
+              {product.media.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                  {product.media.map((media, index) => (
+                    <div
+                      key={media.id}
+                      className="overflow-hidden rounded-lg border border-border bg-brand-gray-50"
+                    >
+                      <div className="aspect-[4/3]">
+                        <img
+                          src={buildApiUrl(media.imageUrl)}
+                          alt={`Photo ${index + 1} de ${product.model}`}
+                          className="size-full object-cover"
+                        />
+                      </div>
+                      <div className="px-3 py-2 text-xs text-muted-foreground">
+                        Photo {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-border p-8 text-center">
+                  <ImagePlus
+                    aria-hidden="true"
+                    className="mx-auto size-7 text-muted-foreground"
+                  />
+                  <p className="mt-3 text-sm font-medium">
+                    Aucune photo enregistrée
+                  </p>
+                  <p className="type-secondary mt-1 text-muted-foreground">
+                    Ajoutez les photos qui seront affichées sur la fiche du
+                    vélo.
+                  </p>
+                </div>
+              )}
+
+              {product.media.length < 10 ? (
+                <div className="rounded-xl border border-border bg-brand-gray-50 p-4">
+                  <label
+                    htmlFor="product-photo-upload"
+                    className="type-label block"
+                  >
+                    Ajouter des photos
+                  </label>
+
+                  <input
+                    ref={photoInputRef}
+                    id="product-photo-upload"
+                    type="file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    className="mt-3 block w-full text-sm"
+                    disabled={isUploadingPhotos}
+                    onChange={handlePhotoSelection}
+                  />
+
+                  {selectedPhotos.length > 0 ? (
+                    <p className="type-secondary mt-3 text-muted-foreground">
+                      {selectedPhotos.length} photo
+                      {selectedPhotos.length > 1 ? 's' : ''} sélectionnée
+                      {selectedPhotos.length > 1 ? 's' : ''}.
+                    </p>
+                  ) : null}
+
+                  <Button
+                    type="button"
+                    className="mt-4"
+                    disabled={selectedPhotos.length === 0 || isUploadingPhotos}
+                    onClick={() => void handleUploadPhotos()}
+                  >
+                    {isUploadingPhotos ? (
+                      <>
+                        <LoaderCircle
+                          aria-hidden="true"
+                          className="size-4 animate-spin"
+                        />
+                        Envoi…
+                      </>
+                    ) : (
+                      <>
+                        <ImagePlus aria-hidden="true" className="size-4" />
+                        Ajouter les photos
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-border bg-brand-gray-50 p-4 text-sm">
+                  Ce vélo possède le maximum de 10 photos.
+                </div>
+              )}
+
+              {photoUploadError ? (
+                <p
+                  role="alert"
+                  className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                >
+                  {photoUploadError}
+                </p>
+              ) : null}
+
+              {photoUploadMessage ? (
+                <p
+                  role="status"
+                  className="rounded-lg border border-border bg-background p-4 text-sm"
+                >
+                  {photoUploadMessage}
+                </p>
+              ) : null}
+            </div>
+          </AdminPanel>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-6">

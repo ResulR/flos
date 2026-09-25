@@ -484,3 +484,131 @@ export async function findAdminProducts(): Promise<AdminProductListRow[]> {
 
   return result.rows
 }
+
+export type AdminProductMediaRow = {
+  id: string
+  product_id: string
+  file_path: string
+  display_order: number
+  created_at: Date
+}
+
+export async function findAdminProductMedia(
+  productId: string,
+): Promise<AdminProductMediaRow[]> {
+  const result = await db.query<AdminProductMediaRow>(
+    `
+      SELECT
+        media.id::text AS id,
+        media.product_id::text AS product_id,
+        media.file_path,
+        media.display_order,
+        media.created_at
+      FROM product_media AS media
+      INNER JOIN products AS product
+        ON product.id = media.product_id
+      WHERE media.product_id = $1::bigint
+        AND product.deleted_at IS NULL
+      ORDER BY media.display_order ASC, media.id ASC
+    `,
+    [productId],
+  )
+
+  return result.rows
+}
+
+export async function findAdminProductMediaById(
+  productId: string,
+  mediaId: string,
+): Promise<AdminProductMediaRow | null> {
+  const result = await db.query<AdminProductMediaRow>(
+    `
+      SELECT
+        media.id::text AS id,
+        media.product_id::text AS product_id,
+        media.file_path,
+        media.display_order,
+        media.created_at
+      FROM product_media AS media
+      INNER JOIN products AS product
+        ON product.id = media.product_id
+      WHERE media.id = $1::bigint
+        AND media.product_id = $2::bigint
+        AND product.deleted_at IS NULL
+      LIMIT 1
+    `,
+    [mediaId, productId],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export async function getAdminProductMediaStats(
+  client: PoolClient,
+  productId: string,
+): Promise<{
+  count: number
+  nextDisplayOrder: number
+}> {
+  const result = await client.query<{
+    count: number
+    next_display_order: number
+  }>(
+    `
+      SELECT
+        count(*)::int AS count,
+        COALESCE(max(display_order) + 1, 0)::int AS next_display_order
+      FROM product_media
+      WHERE product_id = $1::bigint
+    `,
+    [productId],
+  )
+
+  const row = result.rows[0]
+
+  if (!row) {
+    throw new Error('Product media stats query returned no row')
+  }
+
+  return {
+    count: row.count,
+    nextDisplayOrder: row.next_display_order,
+  }
+}
+
+export async function insertAdminProductMedia(
+  client: PoolClient,
+  productId: string,
+  filePath: string,
+  displayOrder: number,
+): Promise<AdminProductMediaRow> {
+  const result = await client.query<AdminProductMediaRow>(
+    `
+      INSERT INTO product_media (
+        product_id,
+        file_path,
+        display_order
+      )
+      VALUES (
+        $1::bigint,
+        $2,
+        $3
+      )
+      RETURNING
+        id::text AS id,
+        product_id::text AS product_id,
+        file_path,
+        display_order,
+        created_at
+    `,
+    [productId, filePath, displayOrder],
+  )
+
+  const media = result.rows[0]
+
+  if (!media) {
+    throw new Error('Product media insert returned no row')
+  }
+
+  return media
+}

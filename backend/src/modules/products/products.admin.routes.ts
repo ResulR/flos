@@ -1,7 +1,11 @@
-import { Router } from 'express'
+import { raw, Router } from 'express'
 
 import { validateRequest } from '../../http/validation.js'
-import { publicProductParamsSchema } from './products.schemas.js'
+import { MAX_IMAGE_FILE_BYTES } from '../../media/upload-limits.js'
+import {
+  publicProductMediaParamsSchema,
+  publicProductParamsSchema,
+} from './products.schemas.js'
 import {
   createAdminProductController,
   createProductReferenceController,
@@ -10,6 +14,8 @@ import {
   getAdminProductReferencesController,
   listAdminProductsController,
   updateAdminProductController,
+  getAdminProductMediaController,
+  uploadAdminProductMediaController,
 } from './products.admin.controller.js'
 import {
   createAdminProductBodySchema,
@@ -45,6 +51,26 @@ adminProductsRouter.get(
     params: publicProductParamsSchema,
   }),
   getAdminProductController,
+)
+
+adminProductsRouter.post(
+  '/:productId/media',
+  validateRequest({
+    params: publicProductParamsSchema,
+  }),
+  raw({
+    type: () => true,
+    limit: MAX_IMAGE_FILE_BYTES,
+  }),
+  uploadAdminProductMediaController,
+)
+
+adminProductsRouter.get(
+  '/:productId/media/:mediaId',
+  validateRequest({
+    params: publicProductMediaParamsSchema,
+  }),
+  getAdminProductMediaController,
 )
 
 adminProductsRouter.patch(

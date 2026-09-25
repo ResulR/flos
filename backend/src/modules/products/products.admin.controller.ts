@@ -1,7 +1,11 @@
 import type { RequestHandler } from 'express'
 
+import { AppError } from '../../http/errors.js'
 import type { ValidationLocals } from '../../http/validation.js'
-import type { PublicProductParams } from './products.schemas.js'
+import type {
+  PublicProductMediaParams,
+  PublicProductParams,
+} from './products.schemas.js'
 import type {
   CreateAdminProductBody,
   CreateProductReferenceBody,
@@ -13,8 +17,10 @@ import {
   deleteAdminProduct,
   getAdminProduct,
   getAdminProductReferences,
+  getAdminProductMediaFile,
   listAdminProducts,
   updateAdminProductDetails,
+  uploadAdminProductMedia,
 } from './products.admin.service.js'
 
 export const getAdminProductReferencesController: RequestHandler = async (
@@ -114,4 +120,38 @@ export const listAdminProductsController: RequestHandler = async (
   res.status(200).json({
     data: products,
   })
+}
+
+export const uploadAdminProductMediaController: RequestHandler<
+  Record<string, string>,
+  unknown,
+  Buffer,
+  unknown,
+  ValidationLocals
+> = async (req, res) => {
+  const params = res.locals.validated.params as PublicProductParams
+
+  if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+    throw new AppError(400, 'VALIDATION_ERROR', 'Une image est requise.')
+  }
+
+  const media = await uploadAdminProductMedia(params.productId, req.body)
+
+  res.status(201).json({
+    data: media,
+  })
+}
+
+export const getAdminProductMediaController: RequestHandler<
+  Record<string, string>,
+  unknown,
+  unknown,
+  unknown,
+  ValidationLocals
+> = async (_req, res) => {
+  const params = res.locals.validated.params as PublicProductMediaParams
+
+  const media = await getAdminProductMediaFile(params.productId, params.mediaId)
+
+  res.sendFile(media.absolutePath)
 }

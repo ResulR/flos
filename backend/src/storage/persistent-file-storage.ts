@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { mkdir, realpath, writeFile } from 'node:fs/promises'
+import { mkdir, realpath, unlink, writeFile } from 'node:fs/promises'
 import { isAbsolute, resolve, sep } from 'node:path'
 
 const MAX_NAME_ATTEMPTS = 5
@@ -84,6 +84,29 @@ export class PersistentFileStorage {
     }
 
     throw new Error('Unable to allocate a unique storage filename')
+  }
+
+  async remove(filePath: string): Promise<boolean> {
+    const absolutePath = await this.resolveExisting(filePath)
+
+    if (!absolutePath) {
+      return false
+    }
+
+    try {
+      await unlink(absolutePath)
+      return true
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        error.code === 'ENOENT'
+      ) {
+        return false
+      }
+
+      throw error
+    }
   }
 
   async resolveExisting(filePath: string): Promise<string | null> {
