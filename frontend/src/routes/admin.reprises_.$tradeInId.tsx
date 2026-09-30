@@ -11,7 +11,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { AdminShell } from '@/components/admin/admin-shell'
 import { AdminPanel, StatusBadge } from '@/components/admin/admin-ui'
 import { Button } from '@/components/ui/button'
-import { ApiClientError, apiRequest } from '@/lib/api'
+import { ApiClientError, apiRequest, buildApiUrl } from '@/lib/api'
 
 export const Route = createFileRoute('/admin/reprises_/$tradeInId')({
   component: AdminTradeInDetailPage,
@@ -37,6 +37,11 @@ type AdminTradeInDetail = {
   status: TradeInStatus
   createdAt: string
   updatedAt: string
+  media: Array<{
+    id: string
+    imageUrl: string
+    displayOrder: number
+  }>
 }
 
 type TradeInInternalNote = {
@@ -582,17 +587,41 @@ function AdminTradeInDetailPage() {
           </AdminPanel>
 
           <AdminPanel title="Photos">
-            <div className="flex min-h-48 flex-col items-center justify-center p-8 text-center">
-              <ImageOff
-                aria-hidden="true"
-                className="size-7 text-muted-foreground"
-              />
-              <p className="mt-4 font-medium">Aucune photo disponible</p>
-              <p className="type-secondary mt-2 max-w-lg text-muted-foreground">
-                Le formulaire public actuel ne permet pas encore de joindre des
-                photos à une demande de reprise.
-              </p>
-            </div>
+            {tradeIn.media.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3 lg:grid-cols-5 lg:p-6">
+                {tradeIn.media.map((media, index) => (
+                  <div
+                    key={media.id}
+                    className="overflow-hidden rounded-lg border border-border bg-brand-gray-50"
+                  >
+                    <div className="aspect-[4/3]">
+                      <img
+                        src={buildApiUrl(media.imageUrl)}
+                        alt={`Photo ${index + 1} de la reprise`}
+                        className="size-full object-cover"
+                      />
+                    </div>
+
+                    <div className="px-3 py-2">
+                      <span className="text-xs text-muted-foreground">
+                        Photo {index + 1}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex min-h-48 flex-col items-center justify-center p-8 text-center">
+                <ImageOff
+                  aria-hidden="true"
+                  className="size-7 text-muted-foreground"
+                />
+                <p className="mt-4 font-medium">Aucune photo disponible</p>
+                <p className="type-secondary mt-2 max-w-lg text-muted-foreground">
+                  Le client n’a joint aucune photo à cette demande.
+                </p>
+              </div>
+            )}
           </AdminPanel>
 
           <div className="grid gap-6 lg:grid-cols-2">

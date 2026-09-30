@@ -12,6 +12,7 @@ const envSchema = z.object({
     .transform((value) => value === 'true'),
   DATABASE_URL: z.string().url(),
   PRODUCT_MEDIA_ROOT: z.string().min(1),
+  TRADE_IN_MEDIA_ROOT: z.string().min(1),
 })
 
 const result = envSchema.safeParse(process.env)

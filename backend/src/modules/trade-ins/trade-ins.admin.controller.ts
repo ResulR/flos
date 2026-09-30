@@ -2,6 +2,7 @@ import type { RequestHandler } from 'express'
 
 import type { ValidationLocals } from '../../http/validation.js'
 import type {
+  AdminTradeInMediaParams,
   AdminTradeInParams,
   TradeInInternalNoteParams,
   UpdateTradeInInternalNoteBody,
@@ -12,6 +13,7 @@ import type {
 } from './trade-ins.admin.schemas.js'
 import {
   getAdminTradeIn,
+  getAdminTradeInMediaFile,
   getTradeInInternalNote,
   listAdminTradeIns,
   setTradeInInternalNote,
@@ -112,4 +114,19 @@ export const getAdminTradeInController: RequestHandler<
   res.status(200).json({
     data: tradeIn,
   })
+}
+
+export const getAdminTradeInMediaController: RequestHandler<
+  Record<string, string>,
+  unknown,
+  unknown,
+  unknown,
+  ValidationLocals
+> = async (_req, res) => {
+  const { tradeInId, mediaId } = res.locals.validated
+    .params as AdminTradeInMediaParams
+
+  const media = await getAdminTradeInMediaFile(tradeInId, mediaId)
+
+  res.sendFile(media.absolutePath)
 }

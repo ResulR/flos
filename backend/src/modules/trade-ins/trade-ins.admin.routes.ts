@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { validateRequest } from '../../http/validation.js'
 import {
   getAdminTradeInController,
+  getAdminTradeInMediaController,
   getTradeInInternalNoteController,
   listAdminTradeInsController,
   updateTradeInInternalNoteController,
@@ -10,6 +11,7 @@ import {
   updateTradeInStatusController,
 } from './trade-ins.admin.controller.js'
 import {
+  adminTradeInMediaParamsSchema,
   adminTradeInParamsSchema,
   tradeInInternalNoteParamsSchema,
   updateTradeInInternalNoteBodySchema,
@@ -22,6 +24,14 @@ import {
 export const adminTradeInsRouter = Router()
 
 adminTradeInsRouter.get('/', listAdminTradeInsController)
+
+adminTradeInsRouter.get(
+  '/:tradeInId/media/:mediaId',
+  validateRequest({
+    params: adminTradeInMediaParamsSchema,
+  }),
+  getAdminTradeInMediaController,
+)
 
 adminTradeInsRouter.get(
   '/:tradeInId',

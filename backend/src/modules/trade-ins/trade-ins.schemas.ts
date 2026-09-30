@@ -18,4 +18,16 @@ export const createTradeInSchema = z
   })
   .strict()
 
+export const tradeInMediaParamsSchema = z
+  .object({
+    tradeInId: z.string().regex(/^[1-9]\d*$/, 'Reprise invalide'),
+  })
+  .strict()
+
+export const tradeInUploadTokenSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9_-]{43}$/, 'Token d’upload invalide')
+
 export type CreateTradeInInput = z.infer<typeof createTradeInSchema>
+
+export type TradeInMediaParams = z.infer<typeof tradeInMediaParamsSchema>

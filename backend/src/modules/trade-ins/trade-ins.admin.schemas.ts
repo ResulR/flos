@@ -57,4 +57,15 @@ export type UpdateTradeInInternalNoteBody = z.infer<
 
 export const adminTradeInParamsSchema = updateTradeInStatusParamsSchema
 
+export const adminTradeInMediaParamsSchema = z
+  .object({
+    tradeInId: z.string().regex(/^[1-9]\d*$/, 'Reprise invalide'),
+    mediaId: z.string().regex(/^[1-9]\d*$/, 'Média invalide'),
+  })
+  .strict()
+
 export type AdminTradeInParams = z.infer<typeof adminTradeInParamsSchema>
+
+export type AdminTradeInMediaParams = z.infer<
+  typeof adminTradeInMediaParamsSchema
+>

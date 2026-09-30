@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { ImagePlus, LoaderCircle } from 'lucide-react'
-import { type FormEvent, useState } from 'react'
+import { type ChangeEvent, type FormEvent, useState } from 'react'
 
 import { FlowState } from '@/components/feedback/flow-state'
 import { PublicPage } from '@/components/layout/public-page'
@@ -17,6 +17,18 @@ type CreatedTradeIn = {
   status: 'pending'
   createdAt: string
 }
+
+type CreatedTradeInResponse = CreatedTradeIn & {
+  uploadToken: string
+}
+
+const MAX_TRADE_IN_PHOTOS = 5
+const MAX_TRADE_IN_PHOTO_BYTES = 10 * 1024 * 1024
+const ACCEPTED_TRADE_IN_PHOTO_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+])
 
 type TradeInFieldErrors = Partial<
   Record<
@@ -95,6 +107,58 @@ function TradeInPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<TradeInFieldErrors>({})
   const [tradeIn, setTradeIn] = useState<CreatedTradeIn | null>(null)
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([])
+  const [photoSelectionError, setPhotoSelectionError] = useState<string | null>(
+    null,
+  )
+  const [submissionWarning, setSubmissionWarning] = useState<string | null>(
+    null,
+  )
+
+  function handlePhotoSelection(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.currentTarget.files ?? [])
+
+    setPhotoSelectionError(null)
+
+    if (files.length > MAX_TRADE_IN_PHOTOS) {
+      setSelectedPhotos([])
+      event.currentTarget.value = ''
+      setPhotoSelectionError(
+        `Vous pouvez joindre au maximum ${MAX_TRADE_IN_PHOTOS} photos.`,
+      )
+      return
+    }
+
+    const unsupported = files.find(
+      (file) =>
+        file.type !== '' && !ACCEPTED_TRADE_IN_PHOTO_TYPES.has(file.type),
+    )
+
+    if (unsupported) {
+      setSelectedPhotos([])
+      event.currentTarget.value = ''
+      setPhotoSelectionError('Formats acceptés : JPEG, PNG ou WebP uniquement.')
+      return
+    }
+
+    const oversized = files.find((file) => file.size > MAX_TRADE_IN_PHOTO_BYTES)
+
+    if (oversized) {
+      setSelectedPhotos([])
+      event.currentTarget.value = ''
+      setPhotoSelectionError('Chaque photo doit peser au maximum 10 Mo.')
+      return
+    }
+
+    setSelectedPhotos(files)
+  }
+
+  function removeSelectedPhoto(index: number) {
+    setSelectedPhotos((current) =>
+      current.filter((_, currentIndex) => currentIndex !== index),
+    )
+    setPhotoSelectionError(null)
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -105,6 +169,7 @@ function TradeInPage() {
 
     setSubmitError(null)
     setFieldErrors({})
+    setSubmissionWarning(null)
 
     const formData = new FormData(event.currentTarget)
 
@@ -151,12 +216,56 @@ function TradeInPage() {
     setIsSubmitting(true)
 
     try {
-      const createdTradeIn = await apiRequest<CreatedTradeIn>('/trade-ins', {
-        method: 'POST',
-        body,
-      })
+      const createdTradeIn = await apiRequest<CreatedTradeInResponse>(
+        '/trade-ins',
+        {
+          method: 'POST',
+          body,
+        },
+      )
 
-      setTradeIn(createdTradeIn)
+      const submittedTradeIn: CreatedTradeIn = {
+        id: createdTradeIn.id,
+        status: createdTradeIn.status,
+        createdAt: createdTradeIn.createdAt,
+      }
+
+      let uploadedPhotoCount = 0
+
+      try {
+        for (const file of selectedPhotos) {
+          await apiRequest<{
+            id: string
+            displayOrder: number
+          }>(`/trade-ins/${createdTradeIn.id}/media`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': file.type || 'application/octet-stream',
+              'X-Trade-In-Upload-Token': createdTradeIn.uploadToken,
+            },
+            body: file,
+          })
+
+          uploadedPhotoCount += 1
+        }
+
+        setSelectedPhotos([])
+        setTradeIn(submittedTradeIn)
+      } catch (uploadError) {
+        setTradeIn(submittedTradeIn)
+
+        const failedPhotoCount = selectedPhotos.length - uploadedPhotoCount
+
+        if (uploadError instanceof ApiClientError) {
+          setSubmissionWarning(
+            `Votre demande a bien été enregistrée, mais ${failedPhotoCount} photo${failedPhotoCount > 1 ? 's n’ont' : ' n’a'} pas pu être envoyée${failedPhotoCount > 1 ? 's' : ''}. ${uploadError.message}`,
+          )
+        } else {
+          setSubmissionWarning(
+            `Votre demande a bien été enregistrée, mais ${failedPhotoCount} photo${failedPhotoCount > 1 ? 's n’ont' : ' n’a'} pas pu être envoyée${failedPhotoCount > 1 ? 's' : ''}.`,
+          )
+        }
+      }
     } catch (error) {
       if (error instanceof ApiClientError) {
         if (error.code === 'VALIDATION_ERROR') {
@@ -203,12 +312,28 @@ function TradeInPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setTradeIn(null)}
+                  onClick={() => {
+                    setTradeIn(null)
+                    setSelectedPhotos([])
+                    setPhotoSelectionError(null)
+                    setSubmissionWarning(null)
+                    setSubmitError(null)
+                    setFieldErrors({})
+                  }}
                 >
                   Envoyer une autre demande
                 </Button>
               }
             />
+
+            {submissionWarning ? (
+              <p
+                role="alert"
+                className="mt-5 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"
+              >
+                {submissionWarning}
+              </p>
+            ) : null}
           </div>
         ) : (
           <form
@@ -311,20 +436,79 @@ function TradeInPage() {
             <section className="mt-10 border-t border-border pt-10">
               <h2 className="type-heading-3">Photos</h2>
 
-              <div className="mt-6 flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-brand-gray-400 bg-brand-gray-50 p-8 text-center">
-                <ImagePlus
-                  aria-hidden="true"
-                  className="size-7 text-muted-foreground"
-                />
+              <p className="type-secondary mt-3 text-muted-foreground">
+                Ajoutez jusqu’à 5 photos du vélo pour faciliter son estimation.
+                Formats JPEG, PNG ou WebP, 10 Mo maximum par photo.
+              </p>
 
-                <span className="mt-4 font-medium">
-                  Ajout de photos bientôt disponible
-                </span>
+              <div className="mt-6 rounded-xl border border-dashed border-brand-gray-400 bg-brand-gray-50 p-6">
+                <div className="flex items-start gap-3">
+                  <ImagePlus
+                    aria-hidden="true"
+                    className="mt-0.5 size-6 shrink-0 text-muted-foreground"
+                  />
 
-                <span className="type-secondary mt-2 max-w-md text-muted-foreground">
-                  Vous pouvez déjà envoyer votre demande sans photo. Elles
-                  seront prises en charge dans une prochaine étape.
-                </span>
+                  <div className="min-w-0 flex-1">
+                    <label
+                      htmlFor="trade-in-photos"
+                      className="type-label block"
+                    >
+                      Ajouter des photos — facultatif
+                    </label>
+
+                    <input
+                      id="trade-in-photos"
+                      type="file"
+                      multiple
+                      accept="image/jpeg,image/png,image/webp"
+                      disabled={isSubmitting}
+                      className="mt-3 block w-full text-sm"
+                      onChange={handlePhotoSelection}
+                    />
+
+                    <p className="type-secondary mt-2 text-muted-foreground">
+                      {selectedPhotos.length} / {MAX_TRADE_IN_PHOTOS} photo
+                      {selectedPhotos.length > 1 ? 's' : ''} sélectionnée
+                      {selectedPhotos.length > 1 ? 's' : ''}.
+                    </p>
+                  </div>
+                </div>
+
+                {selectedPhotos.length > 0 ? (
+                  <div className="mt-5 space-y-2">
+                    {selectedPhotos.map((file, index) => (
+                      <div
+                        key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">
+                            {file.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {(file.size / (1024 * 1024)).toFixed(1)} Mo
+                          </p>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={isSubmitting}
+                          onClick={() => removeSelectedPhoto(index)}
+                        >
+                          Retirer
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                {photoSelectionError ? (
+                  <p role="alert" className="mt-4 text-sm text-destructive">
+                    {photoSelectionError}
+                  </p>
+                ) : null}
               </div>
             </section>
 

@@ -1,10 +1,24 @@
+import { createHash, randomBytes } from 'node:crypto'
+
 import { db } from '../../config/database.js'
+import { env } from '../../config/env.js'
+import { logger } from '../../config/logger.js'
 import { AppError } from '../../http/errors.js'
 import {
+  UnsupportedImageFileError,
+  validateImageFile,
+} from '../../media/image-file-validator.js'
+import { PersistentFileStorage } from '../../storage/persistent-file-storage.js'
+import {
   findAdminTradeInById,
+  findAdminTradeInMedia,
+  findAdminTradeInMediaById,
   findAdminTradeIns,
   findTradeInInternalNote,
+  getTradeInMediaStats,
   insertTradeIn,
+  insertTradeInMedia,
+  lockTradeInForMediaUpload,
   lockTradeInForStatusUpdate,
   setTradeInStatus,
   updateTradeInInternalNote,
@@ -12,8 +26,20 @@ import {
 } from './trade-ins.repository.js'
 import type { CreateTradeInInput } from './trade-ins.schemas.js'
 
+const MAX_TRADE_IN_MEDIA_COUNT = 5
+const tradeInMediaStorage = new PersistentFileStorage(env.TRADE_IN_MEDIA_ROOT)
+
+function createTradeInUploadToken() {
+  return randomBytes(32).toString('base64url')
+}
+
+function hashTradeInUploadToken(uploadToken: string) {
+  return createHash('sha256').update(uploadToken).digest('hex')
+}
+
 export type CreatedTradeIn = {
   id: string
+  uploadToken: string
   status: 'pending'
   createdAt: string
 }
@@ -21,12 +47,110 @@ export type CreatedTradeIn = {
 export async function createTradeIn(
   input: CreateTradeInInput,
 ): Promise<CreatedTradeIn> {
-  const tradeIn = await insertTradeIn(input)
+  const uploadToken = createTradeInUploadToken()
+  const tradeIn = await insertTradeIn(
+    input,
+    hashTradeInUploadToken(uploadToken),
+  )
 
   return {
     id: tradeIn.id,
+    uploadToken,
     status: tradeIn.status,
     createdAt: tradeIn.created_at.toISOString(),
+  }
+}
+
+export type UploadedTradeInMedia = {
+  id: string
+  displayOrder: number
+}
+
+export async function uploadTradeInMedia(
+  tradeInId: string,
+  uploadToken: string,
+  content: Buffer,
+): Promise<UploadedTradeInMedia> {
+  let imageType
+
+  try {
+    imageType = validateImageFile(content)
+  } catch (error) {
+    if (error instanceof UnsupportedImageFileError) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'Format image invalide. Formats acceptés : JPEG, PNG ou WebP.',
+      )
+    }
+
+    throw error
+  }
+
+  const client = await db.connect()
+  let storedFilePath: string | null = null
+
+  try {
+    await client.query('BEGIN')
+
+    const tradeIn = await lockTradeInForMediaUpload(
+      client,
+      tradeInId,
+      hashTradeInUploadToken(uploadToken),
+    )
+
+    if (!tradeIn) {
+      throw new AppError(403, 'FORBIDDEN', 'Accès à la reprise refusé')
+    }
+
+    const mediaStats = await getTradeInMediaStats(client, tradeInId)
+
+    if (mediaStats.count >= MAX_TRADE_IN_MEDIA_COUNT) {
+      throw new AppError(
+        409,
+        'CONFLICT',
+        'Cette reprise possède déjà le maximum de 5 photos.',
+      )
+    }
+
+    const stored = await tradeInMediaStorage.save(content, {
+      extension: imageType.extension,
+    })
+
+    storedFilePath = stored.filePath
+
+    const media = await insertTradeInMedia(
+      client,
+      tradeInId,
+      stored.filePath,
+      mediaStats.nextDisplayOrder,
+    )
+
+    await client.query('COMMIT')
+
+    return {
+      id: media.id,
+      displayOrder: media.display_order,
+    }
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
+
+    if (storedFilePath) {
+      await tradeInMediaStorage.remove(storedFilePath).catch((cleanupError) => {
+        logger.error(
+          {
+            err: cleanupError,
+            tradeInId,
+            filePath: storedFilePath,
+          },
+          'Unable to clean trade-in media after failed database write',
+        )
+      })
+    }
+
+    throw error
+  } finally {
+    client.release()
   }
 }
 
@@ -191,6 +315,12 @@ export async function listAdminTradeIns(): Promise<AdminTradeInListItem[]> {
   }))
 }
 
+export type AdminTradeInMedia = {
+  id: string
+  imageUrl: string
+  displayOrder: number
+}
+
 export type AdminTradeInDetail = {
   id: string
   customerFirstName: string
@@ -206,6 +336,7 @@ export type AdminTradeInDetail = {
   status: 'pending' | 'reviewing' | 'accepted' | 'rejected' | 'closed'
   createdAt: string
   updatedAt: string
+  media: AdminTradeInMedia[]
 }
 
 export async function getAdminTradeIn(
@@ -216,6 +347,8 @@ export async function getAdminTradeIn(
   if (!tradeIn) {
     throw new AppError(404, 'NOT_FOUND', 'Demande de reprise introuvable')
   }
+
+  const media = await findAdminTradeInMedia(tradeIn.id)
 
   return {
     id: tradeIn.id,
@@ -232,5 +365,37 @@ export async function getAdminTradeIn(
     status: tradeIn.status,
     createdAt: tradeIn.created_at.toISOString(),
     updatedAt: tradeIn.updated_at.toISOString(),
+    media: media.map((item) => ({
+      id: item.id,
+      imageUrl: `/admin/trade-ins/${tradeIn.id}/media/${item.id}`,
+      displayOrder: item.display_order,
+    })),
+  }
+}
+
+export type AdminTradeInMediaFile = {
+  absolutePath: string
+}
+
+export async function getAdminTradeInMediaFile(
+  tradeInId: string,
+  mediaId: string,
+): Promise<AdminTradeInMediaFile> {
+  const media = await findAdminTradeInMediaById(tradeInId, mediaId)
+
+  if (!media) {
+    throw new AppError(404, 'NOT_FOUND', 'Média introuvable')
+  }
+
+  const absolutePath = await tradeInMediaStorage.resolveExisting(
+    media.file_path,
+  )
+
+  if (!absolutePath) {
+    throw new AppError(404, 'NOT_FOUND', 'Média introuvable')
+  }
+
+  return {
+    absolutePath,
   }
 }

@@ -11,6 +11,7 @@ export type TradeInRow = {
 
 export async function insertTradeIn(
   input: CreateTradeInInput,
+  uploadTokenHash: string,
 ): Promise<TradeInRow> {
   const result = await db.query<TradeInRow>(
     `
@@ -24,7 +25,8 @@ export async function insertTradeIn(
         bike_year,
         desired_price_cents,
         description,
-        status
+        status,
+        upload_token_hash
       )
       VALUES (
         $1,
@@ -36,7 +38,8 @@ export async function insertTradeIn(
         $7,
         $8,
         $9,
-        'pending'
+        'pending',
+        $10
       )
       RETURNING
         id::text AS id,
@@ -53,6 +56,7 @@ export async function insertTradeIn(
       input.year ?? null,
       input.desiredPriceCents ?? null,
       input.description ?? null,
+      uploadTokenHash,
     ],
   )
 
@@ -63,6 +67,151 @@ export async function insertTradeIn(
   }
 
   return tradeIn
+}
+
+export type TradeInUploadAccessRow = {
+  id: string
+}
+
+export async function lockTradeInForMediaUpload(
+  client: PoolClient,
+  tradeInId: string,
+  uploadTokenHash: string,
+): Promise<TradeInUploadAccessRow | null> {
+  const result = await client.query<TradeInUploadAccessRow>(
+    `
+      SELECT id::text AS id
+      FROM trade_ins
+      WHERE id = $1::bigint
+        AND upload_token_hash = $2
+      FOR UPDATE
+    `,
+    [tradeInId, uploadTokenHash],
+  )
+
+  return result.rows[0] ?? null
+}
+
+export async function getTradeInMediaStats(
+  client: PoolClient,
+  tradeInId: string,
+): Promise<{
+  count: number
+  nextDisplayOrder: number
+}> {
+  const result = await client.query<{
+    count: number
+    next_display_order: number
+  }>(
+    `
+      SELECT
+        count(*)::int AS count,
+        COALESCE(max(display_order) + 1, 0)::int AS next_display_order
+      FROM trade_in_media
+      WHERE trade_in_id = $1::bigint
+    `,
+    [tradeInId],
+  )
+
+  const row = result.rows[0]
+
+  if (!row) {
+    throw new Error('Trade-in media stats query returned no row')
+  }
+
+  return {
+    count: row.count,
+    nextDisplayOrder: row.next_display_order,
+  }
+}
+
+export type TradeInMediaRow = {
+  id: string
+  trade_in_id: string
+  file_path: string
+  display_order: number
+  created_at: Date
+}
+
+export async function insertTradeInMedia(
+  client: PoolClient,
+  tradeInId: string,
+  filePath: string,
+  displayOrder: number,
+): Promise<TradeInMediaRow> {
+  const result = await client.query<TradeInMediaRow>(
+    `
+      INSERT INTO trade_in_media (
+        trade_in_id,
+        file_path,
+        display_order
+      )
+      VALUES (
+        $1::bigint,
+        $2,
+        $3
+      )
+      RETURNING
+        id::text AS id,
+        trade_in_id::text AS trade_in_id,
+        file_path,
+        display_order,
+        created_at
+    `,
+    [tradeInId, filePath, displayOrder],
+  )
+
+  const media = result.rows[0]
+
+  if (!media) {
+    throw new Error('Trade-in media insert returned no row')
+  }
+
+  return media
+}
+
+export async function findAdminTradeInMedia(
+  tradeInId: string,
+): Promise<TradeInMediaRow[]> {
+  const result = await db.query<TradeInMediaRow>(
+    `
+      SELECT
+        id::text AS id,
+        trade_in_id::text AS trade_in_id,
+        file_path,
+        display_order,
+        created_at
+      FROM trade_in_media
+      WHERE trade_in_id = $1::bigint
+      ORDER BY display_order ASC, id ASC
+    `,
+    [tradeInId],
+  )
+
+  return result.rows
+}
+
+export async function findAdminTradeInMediaById(
+  tradeInId: string,
+  mediaId: string,
+): Promise<TradeInMediaRow | null> {
+  const result = await db.query<TradeInMediaRow>(
+    `
+      SELECT
+        id::text AS id,
+        trade_in_id::text AS trade_in_id,
+        file_path,
+        display_order,
+        created_at
+      FROM trade_in_media
+      WHERE id = $1::bigint
+        AND trade_in_id = $2::bigint
+      LIMIT 1
+    `,
+    [mediaId, tradeInId],
+  )
+
+  return result.rows[0] ?? null
 }
 
 export type TradeInStatus =
