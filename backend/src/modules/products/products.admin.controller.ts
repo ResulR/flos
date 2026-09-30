@@ -192,5 +192,10 @@ export const getAdminProductMediaController: RequestHandler<
 
   const media = await getAdminProductMediaFile(params.productId, params.mediaId)
 
-  res.sendFile(media.absolutePath)
+  res.setHeader('Cache-Control', 'private, no-store')
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+
+  res.sendFile(media.absolutePath, {
+    cacheControl: false,
+  })
 }

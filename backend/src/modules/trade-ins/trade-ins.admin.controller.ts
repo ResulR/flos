@@ -128,5 +128,10 @@ export const getAdminTradeInMediaController: RequestHandler<
 
   const media = await getAdminTradeInMediaFile(tradeInId, mediaId)
 
-  res.sendFile(media.absolutePath)
+  res.setHeader('Cache-Control', 'private, no-store')
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+
+  res.sendFile(media.absolutePath, {
+    cacheControl: false,
+  })
 }

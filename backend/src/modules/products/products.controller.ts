@@ -55,7 +55,12 @@ export const getPublicProductMedia: RequestHandler<
 
   const media = await getPublicProductMediaFile(productId, mediaId)
 
-  res.sendFile(media.absolutePath)
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+
+  res.sendFile(media.absolutePath, {
+    cacheControl: false,
+  })
 }
 
 export const getPublicProductFilters: RequestHandler = async (_req, res) => {
