@@ -35,7 +35,9 @@ function toPublicProductListItem(row: PublicProductRow): PublicProductListItem {
       row.status === 'reserved' && row.reserved_until
         ? row.reserved_until.toISOString()
         : null,
-    imageUrl: null,
+    imageUrl: row.primary_media_id
+      ? `/products/${row.id}/media/${row.primary_media_id}`
+      : null,
   }
 }
 

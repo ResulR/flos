@@ -569,6 +569,53 @@ export async function deleteAdminProductMedia(
   return result.rows[0] ?? null
 }
 
+export async function findAdminProductMediaForUpdate(
+  client: PoolClient,
+  productId: string,
+): Promise<AdminProductMediaRow[]> {
+  const result = await client.query<AdminProductMediaRow>(
+    `
+      SELECT
+        id::text AS id,
+        product_id::text AS product_id,
+        file_path,
+        display_order,
+        created_at
+      FROM product_media
+      WHERE product_id = $1::bigint
+      ORDER BY display_order ASC, id ASC
+      FOR UPDATE
+    `,
+    [productId],
+  )
+
+  return result.rows
+}
+
+export async function updateAdminProductMediaOrder(
+  client: PoolClient,
+  productId: string,
+  mediaIds: string[],
+): Promise<void> {
+  for (const [displayOrder, mediaId] of mediaIds.entries()) {
+    const result = await client.query(
+      `
+        UPDATE product_media
+        SET display_order = $1
+        WHERE id = $2::bigint
+          AND product_id = $3::bigint
+      `,
+      [displayOrder, mediaId, productId],
+    )
+
+    if (result.rowCount !== 1) {
+      throw new Error(
+        'Product media order update affected an unexpected row count',
+      )
+    }
+  }
+}
+
 export async function getAdminProductMediaStats(
   client: PoolClient,
   productId: string,

@@ -66,6 +66,23 @@ export const updateAdminProductBodySchema = z
   })
   .strict()
 
+export const updateAdminProductMediaOrderBodySchema = z
+  .object({
+    mediaIds: z
+      .array(bigintIdSchema)
+      .min(1, 'Au moins une photo est requise')
+      .max(10, 'Maximum 10 photos')
+      .superRefine((mediaIds, context) => {
+        if (new Set(mediaIds).size !== mediaIds.length) {
+          context.addIssue({
+            code: 'custom',
+            message: 'Identifiants de photos dupliqués',
+          })
+        }
+      }),
+  })
+  .strict()
+
 export type ProductReferenceType = z.infer<typeof productReferenceTypeSchema>
 
 export type CreateProductReferenceBody = z.infer<
@@ -78,4 +95,8 @@ export type CreateAdminProductBody = z.infer<
 
 export type UpdateAdminProductBody = z.infer<
   typeof updateAdminProductBodySchema
+>
+
+export type UpdateAdminProductMediaOrderBody = z.infer<
+  typeof updateAdminProductMediaOrderBodySchema
 >

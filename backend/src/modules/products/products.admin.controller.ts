@@ -10,6 +10,7 @@ import type {
   CreateAdminProductBody,
   CreateProductReferenceBody,
   UpdateAdminProductBody,
+  UpdateAdminProductMediaOrderBody,
 } from './products.admin.schemas.js'
 import {
   createAdminProduct,
@@ -20,6 +21,7 @@ import {
   getAdminProductReferences,
   getAdminProductMediaFile,
   listAdminProducts,
+  saveAdminProductMediaOrder,
   updateAdminProductDetails,
   uploadAdminProductMedia,
 } from './products.admin.service.js'
@@ -139,6 +141,23 @@ export const uploadAdminProductMediaController: RequestHandler<
   const media = await uploadAdminProductMedia(params.productId, req.body)
 
   res.status(201).json({
+    data: media,
+  })
+}
+
+export const updateAdminProductMediaOrderController: RequestHandler<
+  Record<string, string>,
+  unknown,
+  unknown,
+  unknown,
+  ValidationLocals
+> = async (_req, res) => {
+  const params = res.locals.validated.params as PublicProductParams
+  const input = res.locals.validated.body as UpdateAdminProductMediaOrderBody
+
+  const media = await saveAdminProductMediaOrder(params.productId, input)
+
+  res.status(200).json({
     data: media,
   })
 }

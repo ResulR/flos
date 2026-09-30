@@ -9,6 +9,7 @@ export type PublicProductRow = {
   condition: string
   status: 'available' | 'reserved' | 'sold'
   reserved_until: Date | null
+  primary_media_id: string | null
 }
 
 export async function findPublicProducts(
@@ -85,7 +86,8 @@ export async function findPublicProducts(
         p.price_cents::text AS price_cents,
         condition.name AS condition,
         p.status,
-        reservation.expires_at AS reserved_until
+        reservation.expires_at AS reserved_until,
+        primary_media.id::text AS primary_media_id
       FROM products AS p
       INNER JOIN product_brands AS brand
         ON brand.id = p.brand_id
@@ -98,6 +100,13 @@ export async function findPublicProducts(
           AND status = 'active'
         LIMIT 1
       ) AS reservation ON true
+      LEFT JOIN LATERAL (
+        SELECT id
+        FROM product_media
+        WHERE product_id = p.id
+        ORDER BY display_order ASC, id ASC
+        LIMIT 1
+      ) AS primary_media ON true
       WHERE ${conditions.join('\n        AND ')}
       ORDER BY ${orderBy}
     `,

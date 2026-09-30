@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import {
+  ArrowDown,
   ArrowLeft,
+  ArrowUp,
   ImagePlus,
   LoaderCircle,
   Plus,
@@ -243,6 +245,12 @@ function AdminProductEditPage() {
   const [photoDeleteMessage, setPhotoDeleteMessage] = useState<string | null>(
     null,
   )
+  const [isSavingPhotoOrder, setIsSavingPhotoOrder] = useState(false)
+  const [photoOrderDirty, setPhotoOrderDirty] = useState(false)
+  const [photoOrderError, setPhotoOrderError] = useState<string | null>(null)
+  const [photoOrderMessage, setPhotoOrderMessage] = useState<string | null>(
+    null,
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -263,6 +271,9 @@ function AdminProductEditPage() {
         }
 
         setProduct(loadedProduct)
+        setPhotoOrderDirty(false)
+        setPhotoOrderError(null)
+        setPhotoOrderMessage(null)
         setReferences({
           brands: sortReferences(loadedReferences.brands),
           bikeTypes: sortReferences(loadedReferences.bikeTypes),
@@ -468,8 +479,137 @@ function AdminProductEditPage() {
     }
   }
 
+  function applyPhotoOrder(media: AdminProductMedia[]) {
+    return media.map((item, index) => ({
+      ...item,
+      displayOrder: index,
+    }))
+  }
+
+  function updatePhotoOrder(nextMedia: AdminProductMedia[]) {
+    setProduct((current) =>
+      current
+        ? {
+            ...current,
+            media: applyPhotoOrder(nextMedia),
+          }
+        : current,
+    )
+
+    setPhotoOrderDirty(true)
+    setPhotoOrderError(null)
+    setPhotoOrderMessage(null)
+    setPhotoUploadError(null)
+    setPhotoUploadMessage(null)
+    setPhotoDeleteError(null)
+    setPhotoDeleteMessage(null)
+  }
+
+  function movePhoto(index: number, direction: -1 | 1) {
+    if (
+      !product ||
+      isSavingPhotoOrder ||
+      isUploadingPhotos ||
+      deletingPhotoId !== null
+    ) {
+      return
+    }
+
+    const targetIndex = index + direction
+
+    if (targetIndex < 0 || targetIndex >= product.media.length) {
+      return
+    }
+
+    const nextMedia = [...product.media]
+    const [moved] = nextMedia.splice(index, 1)
+
+    if (!moved) {
+      return
+    }
+
+    nextMedia.splice(targetIndex, 0, moved)
+    updatePhotoOrder(nextMedia)
+  }
+
+  function setPrimaryPhoto(index: number) {
+    if (
+      !product ||
+      index <= 0 ||
+      index >= product.media.length ||
+      isSavingPhotoOrder ||
+      isUploadingPhotos ||
+      deletingPhotoId !== null
+    ) {
+      return
+    }
+
+    const nextMedia = [...product.media]
+    const [primary] = nextMedia.splice(index, 1)
+
+    if (!primary) {
+      return
+    }
+
+    nextMedia.unshift(primary)
+    updatePhotoOrder(nextMedia)
+  }
+
+  async function handleSavePhotoOrder() {
+    if (
+      !product ||
+      !photoOrderDirty ||
+      isSavingPhotoOrder ||
+      isUploadingPhotos ||
+      deletingPhotoId !== null
+    ) {
+      return
+    }
+
+    setPhotoOrderError(null)
+    setPhotoOrderMessage(null)
+    setIsSavingPhotoOrder(true)
+
+    try {
+      const media = await apiRequest<AdminProductMedia[]>(
+        `/admin/products/${productId}/media/order`,
+        {
+          method: 'PATCH',
+          body: {
+            mediaIds: product.media.map((item) => item.id),
+          },
+        },
+      )
+
+      setProduct((current) =>
+        current
+          ? {
+              ...current,
+              media,
+            }
+          : current,
+      )
+
+      setPhotoOrderDirty(false)
+      setPhotoOrderMessage('Ordre des photos enregistré.')
+    } catch (error) {
+      if (error instanceof ApiClientError) {
+        setPhotoOrderError(error.message)
+      } else {
+        setPhotoOrderError('Impossible d’enregistrer l’ordre des photos.')
+      }
+    } finally {
+      setIsSavingPhotoOrder(false)
+    }
+  }
+
   async function handleDeletePhoto(media: AdminProductMedia) {
-    if (!product || deletingPhotoId !== null || isUploadingPhotos) {
+    if (
+      !product ||
+      deletingPhotoId !== null ||
+      isUploadingPhotos ||
+      isSavingPhotoOrder
+    ) {
       return
     }
 
@@ -838,31 +978,94 @@ function AdminProductEditPage() {
                           className="size-full object-cover"
                         />
                       </div>
-                      <div className="flex items-center justify-between gap-2 px-3 py-2">
-                        <span className="text-xs text-muted-foreground">
-                          Photo {index + 1}
-                        </span>
+                      <div className="space-y-2 px-3 py-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            Photo {index + 1}
+                          </span>
 
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="size-8 text-destructive hover:text-destructive"
-                          aria-label={`Supprimer la photo ${index + 1}`}
-                          disabled={
-                            deletingPhotoId !== null || isUploadingPhotos
-                          }
-                          onClick={() => void handleDeletePhoto(media)}
-                        >
-                          {deletingPhotoId === media.id ? (
-                            <LoaderCircle
-                              aria-hidden="true"
-                              className="size-4 animate-spin"
-                            />
-                          ) : (
-                            <Trash2 aria-hidden="true" className="size-4" />
-                          )}
-                        </Button>
+                          {index === 0 ? (
+                            <span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary">
+                              Principale
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            aria-label={`Monter la photo ${index + 1}`}
+                            disabled={
+                              index === 0 ||
+                              deletingPhotoId !== null ||
+                              isUploadingPhotos ||
+                              isSavingPhotoOrder
+                            }
+                            onClick={() => movePhoto(index, -1)}
+                          >
+                            <ArrowUp aria-hidden="true" className="size-4" />
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            aria-label={`Descendre la photo ${index + 1}`}
+                            disabled={
+                              index === product.media.length - 1 ||
+                              deletingPhotoId !== null ||
+                              isUploadingPhotos ||
+                              isSavingPhotoOrder
+                            }
+                            onClick={() => movePhoto(index, 1)}
+                          >
+                            <ArrowDown aria-hidden="true" className="size-4" />
+                          </Button>
+
+                          {index > 0 ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="px-2 text-xs"
+                              disabled={
+                                deletingPhotoId !== null ||
+                                isUploadingPhotos ||
+                                isSavingPhotoOrder
+                              }
+                              onClick={() => setPrimaryPhoto(index)}
+                            >
+                              Définir principale
+                            </Button>
+                          ) : null}
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="ml-auto size-8 text-destructive hover:text-destructive"
+                            aria-label={`Supprimer la photo ${index + 1}`}
+                            disabled={
+                              deletingPhotoId !== null ||
+                              isUploadingPhotos ||
+                              isSavingPhotoOrder
+                            }
+                            onClick={() => void handleDeletePhoto(media)}
+                          >
+                            {deletingPhotoId === media.id ? (
+                              <LoaderCircle
+                                aria-hidden="true"
+                                className="size-4 animate-spin"
+                              />
+                            ) : (
+                              <Trash2 aria-hidden="true" className="size-4" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -883,6 +1086,52 @@ function AdminProductEditPage() {
                 </div>
               )}
 
+              {product.media.length > 1 ? (
+                <div className="rounded-xl border border-border bg-brand-gray-50 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-medium">Ordre de la galerie</p>
+                      <p className="type-secondary mt-1 text-muted-foreground">
+                        La première photo est utilisée comme photo principale.
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant={photoOrderDirty ? 'primary' : 'outline'}
+                      disabled={
+                        !photoOrderDirty ||
+                        isSavingPhotoOrder ||
+                        isUploadingPhotos ||
+                        deletingPhotoId !== null
+                      }
+                      onClick={() => void handleSavePhotoOrder()}
+                    >
+                      {isSavingPhotoOrder ? (
+                        <>
+                          <LoaderCircle
+                            aria-hidden="true"
+                            className="size-4 animate-spin"
+                          />
+                          Enregistrement…
+                        </>
+                      ) : (
+                        <>
+                          <Save aria-hidden="true" className="size-4" />
+                          Enregistrer l’ordre
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {photoOrderDirty ? (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Modifications non enregistrées.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
               {product.media.length < 10 ? (
                 <div className="rounded-xl border border-border bg-brand-gray-50 p-4">
                   <label
@@ -899,7 +1148,12 @@ function AdminProductEditPage() {
                     multiple
                     accept="image/jpeg,image/png,image/webp"
                     className="mt-3 block w-full text-sm"
-                    disabled={isUploadingPhotos || deletingPhotoId !== null}
+                    disabled={
+                      isUploadingPhotos ||
+                      deletingPhotoId !== null ||
+                      isSavingPhotoOrder ||
+                      photoOrderDirty
+                    }
                     onChange={handlePhotoSelection}
                   />
 
@@ -917,7 +1171,9 @@ function AdminProductEditPage() {
                     disabled={
                       selectedPhotos.length === 0 ||
                       isUploadingPhotos ||
-                      deletingPhotoId !== null
+                      deletingPhotoId !== null ||
+                      isSavingPhotoOrder ||
+                      photoOrderDirty
                     }
                     onClick={() => void handleUploadPhotos()}
                   >
@@ -976,6 +1232,24 @@ function AdminProductEditPage() {
                   className="rounded-lg border border-border bg-background p-4 text-sm"
                 >
                   {photoDeleteMessage}
+                </p>
+              ) : null}
+
+              {photoOrderError ? (
+                <p
+                  role="alert"
+                  className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                >
+                  {photoOrderError}
+                </p>
+              ) : null}
+
+              {photoOrderMessage ? (
+                <p
+                  role="status"
+                  className="rounded-lg border border-border bg-background p-4 text-sm"
+                >
+                  {photoOrderMessage}
                 </p>
               ) : null}
             </div>

@@ -19,6 +19,7 @@ import {
   findAdminProductById,
   findAdminProductMedia,
   findAdminProductMediaById,
+  findAdminProductMediaForUpdate,
   findAdminProductReferences,
   findAdminProducts,
   findAdminProductSpecs,
@@ -30,6 +31,7 @@ import {
   replaceAdminProductSpecs,
   softDeleteAdminProduct,
   updateAdminProduct,
+  updateAdminProductMediaOrder,
   upsertProductReference,
   type AdminProductRow,
   type AdminProductStatus,
@@ -38,6 +40,7 @@ import type {
   CreateAdminProductBody,
   CreateProductReferenceBody,
   UpdateAdminProductBody,
+  UpdateAdminProductMediaOrderBody,
 } from './products.admin.schemas.js'
 
 const MAX_PRODUCT_MEDIA_COUNT = 10
@@ -451,6 +454,55 @@ export async function uploadAdminProductMedia(
       })
     }
 
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+export async function saveAdminProductMediaOrder(
+  productId: string,
+  input: UpdateAdminProductMediaOrderBody,
+): Promise<AdminProductMedia[]> {
+  const client = await db.connect()
+
+  try {
+    await client.query('BEGIN')
+
+    const product = await lockAdminProductById(client, productId)
+
+    if (!product) {
+      throw new AppError(404, 'NOT_FOUND', 'Produit introuvable')
+    }
+
+    const existingMedia = await findAdminProductMediaForUpdate(
+      client,
+      productId,
+    )
+    const existingIds = new Set(existingMedia.map((media) => media.id))
+
+    if (
+      existingMedia.length !== input.mediaIds.length ||
+      input.mediaIds.some((mediaId) => !existingIds.has(mediaId))
+    ) {
+      throw new AppError(
+        400,
+        'VALIDATION_ERROR',
+        'La liste des photos ne correspond pas aux médias du vélo.',
+      )
+    }
+
+    await updateAdminProductMediaOrder(client, productId, input.mediaIds)
+
+    await client.query('COMMIT')
+
+    return input.mediaIds.map((mediaId, displayOrder) => ({
+      id: mediaId,
+      imageUrl: `/admin/products/${productId}/media/${mediaId}`,
+      displayOrder,
+    }))
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined)
     throw error
   } finally {
     client.release()

@@ -15,6 +15,7 @@ import {
   getAdminProductReferencesController,
   listAdminProductsController,
   updateAdminProductController,
+  updateAdminProductMediaOrderController,
   getAdminProductMediaController,
   uploadAdminProductMediaController,
 } from './products.admin.controller.js'
@@ -22,6 +23,7 @@ import {
   createAdminProductBodySchema,
   createProductReferenceBodySchema,
   updateAdminProductBodySchema,
+  updateAdminProductMediaOrderBodySchema,
 } from './products.admin.schemas.js'
 
 export const adminProductsRouter = Router()
@@ -64,6 +66,15 @@ adminProductsRouter.post(
     limit: MAX_IMAGE_FILE_BYTES,
   }),
   uploadAdminProductMediaController,
+)
+
+adminProductsRouter.patch(
+  '/:productId/media/order',
+  validateRequest({
+    params: publicProductParamsSchema,
+    body: updateAdminProductMediaOrderBodySchema,
+  }),
+  updateAdminProductMediaOrderController,
 )
 
 adminProductsRouter.get(
