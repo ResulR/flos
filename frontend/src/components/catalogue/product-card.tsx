@@ -1,5 +1,7 @@
 import { ArrowUpRight } from 'lucide-react'
 
+import { buildApiUrl } from '@/lib/api'
+
 export type ProductCardStatus = 'available' | 'reserved' | 'sold'
 
 type ProductCardProps = {
@@ -39,7 +41,7 @@ export function ProductCard({
         <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-brand-gray-100">
           {imageSrc ? (
             <img
-              src={imageSrc}
+              src={buildApiUrl(imageSrc)}
               alt={`${brand} ${model}`}
               className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.025]"
             />
