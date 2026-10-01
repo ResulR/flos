@@ -20,6 +20,7 @@ type CartContextValue = {
   isHydrated: boolean
   addItem: (productId: string) => void
   removeItem: (productId: string) => void
+  clearCart: () => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -63,6 +64,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems((currentItems) =>
           currentItems.filter((item) => item.productId !== productId),
         )
+      },
+      clearCart: () => {
+        setItems([])
       },
     }),
     [items, isHydrated],

@@ -1,14 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import {
   ArrowLeft,
+  ArrowRight,
+  Check,
   CheckCircle2,
   LoaderCircle,
   LockKeyhole,
+  MapPin,
+  PackageCheck,
+  Truck,
 } from 'lucide-react'
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
 
 import { PublicPage } from '@/components/layout/public-page'
-import { Button } from '@/components/ui/button'
 import { TextField } from '@/components/ui/field'
 import { useCart } from '@/features/cart/cart-context'
 import { ApiClientError, apiRequest } from '@/lib/api'
@@ -43,6 +47,7 @@ type PublicSiteSettings = {
 
 type CreatedDraftOrder = {
   id: string
+  trackingToken: string
   status: 'pending_payment'
   paymentStatus: 'pending'
   subtotalCents: string
@@ -95,7 +100,7 @@ function getCheckoutFieldErrors(error: ApiClientError): FieldErrors {
 }
 
 function CheckoutPage() {
-  const { items, isHydrated } = useCart()
+  const { items, isHydrated, clearCart } = useCart()
 
   const [cart, setCart] = useState<RevalidatedCart | null>(null)
   const [settings, setSettings] = useState<PublicSiteSettings | null>(null)
@@ -109,11 +114,7 @@ function CheckoutPage() {
   const [order, setOrder] = useState<CreatedDraftOrder | null>(null)
 
   useEffect(() => {
-    if (!isHydrated) {
-      return
-    }
-
-    if (items.length === 0) {
+    if (!isHydrated || items.length === 0) {
       return
     }
 
@@ -143,7 +144,7 @@ function CheckoutPage() {
           setLoadError(
             error instanceof ApiClientError
               ? error.message
-              : 'Impossible de préparer le checkout.',
+              : 'Impossible de préparer votre commande.',
           )
         }
       } finally {
@@ -218,6 +219,7 @@ function CheckoutPage() {
       })
 
       setOrder(createdOrder)
+      clearCart()
     } catch (error) {
       if (error instanceof ApiClientError) {
         setSubmitError(error.message)
@@ -262,314 +264,365 @@ function CheckoutPage() {
 
   return (
     <PublicPage>
-      <section className="border-b border-border bg-brand-gray-50">
-        <div className="site-container py-10 lg:py-14">
+      <section className="border-b border-black/8 bg-[#f7f5f1]">
+        <div className="site-container py-10 sm:py-12 lg:py-14">
           <a
             href="/panier"
-            className="type-secondary inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-[#171717]"
           >
-            <ArrowLeft aria-hidden="true" className="size-4" />
+            <ArrowLeft
+              aria-hidden="true"
+              className="size-4 transition-transform duration-200 group-hover:-translate-x-1"
+            />
             Retour au panier
           </a>
 
-          <p className="type-label mt-8 uppercase tracking-[0.16em] text-primary">
-            Commande
-          </p>
+          <div className="mt-9">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#b44a42]">
+              Commande
+            </p>
 
-          <h1 className="type-display mt-3">Finaliser votre achat.</h1>
+            <h1 className="mt-4 max-w-4xl font-[Georgia,'Times_New_Roman',serif] text-[clamp(3rem,5.5vw,5.2rem)] font-normal leading-[0.95] tracking-[-0.055em] text-[#171717]">
+              Finaliser votre commande.
+            </h1>
 
-          <p className="type-body mt-4 max-w-2xl text-muted-foreground">
-            Aucun compte n’est nécessaire. Les informations saisies servent
-            uniquement au traitement de votre commande.
-          </p>
+            <p className="mt-5 max-w-2xl text-base font-light leading-relaxed text-muted-foreground">
+              Aucun compte n’est nécessaire. Renseignez vos coordonnées puis
+              choisissez comment vous souhaitez recevoir votre vélo.
+            </p>
+          </div>
         </div>
       </section>
 
-      <section className="site-container section-space">
-        {!isHydrated || isLoading ? (
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <LoaderCircle aria-hidden="true" className="size-5 animate-spin" />
-            <p className="type-body">Préparation de votre commande…</p>
-          </div>
-        ) : items.length === 0 ? (
-          <div className="rounded-lg border border-border bg-brand-gray-50 p-6">
-            <h2 className="text-xl font-medium">Votre panier est vide.</h2>
-            <p className="type-secondary mt-2 text-muted-foreground">
-              Ajoutez un vélo avant de passer à la commande.
-            </p>
-            <a
+      <section className="bg-white py-12 sm:py-16 lg:py-20">
+        <div className="site-container">
+          {!isHydrated || isLoading ? (
+            <CheckoutSkeleton />
+          ) : order ? (
+            <OrderSuccess order={order} />
+          ) : items.length === 0 ? (
+            <StateCard
+              title="Votre panier est vide."
+              text="Ajoutez un vélo avant de passer à la commande."
               href="/catalogue"
-              className="type-button mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-primary-foreground hover:bg-brand-red-dark"
-            >
-              Voir les vélos
-            </a>
-          </div>
-        ) : loadError ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6">
-            <h2 className="text-xl font-medium">
-              Impossible de préparer le checkout.
-            </h2>
-            <p className="type-secondary mt-2 text-destructive">{loadError}</p>
-          </div>
-        ) : !cart?.isValid ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6">
-            <h2 className="text-xl font-medium">
-              Votre panier doit être vérifié.
-            </h2>
-            <p className="type-secondary mt-2 text-muted-foreground">
-              Un ou plusieurs vélos ne sont plus disponibles. Revenez au panier
-              avant de continuer.
-            </p>
-            <a
+              action="Voir les vélos"
+            />
+          ) : loadError ? (
+            <StateCard
+              title="Impossible de préparer la commande."
+              text={loadError}
               href="/panier"
-              className="type-button mt-5 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 text-primary-foreground hover:bg-brand-red-dark"
+              action="Retour au panier"
+              tone="error"
+            />
+          ) : !cart?.isValid ? (
+            <StateCard
+              title="Votre panier doit être vérifié."
+              text="Un ou plusieurs vélos ne sont plus disponibles. Revenez au panier avant de continuer."
+              href="/panier"
+              action="Vérifier le panier"
+              tone="error"
+            />
+          ) : (
+            <form
+              onSubmit={handleSubmit}
+              className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_25rem]"
             >
-              Retour au panier
-            </a>
-          </div>
-        ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="grid gap-10 lg:grid-cols-[1fr_23rem]"
-          >
-            <div className="space-y-10">
-              <fieldset disabled={Boolean(order)}>
-                <legend className="type-heading-3">Vos coordonnées</legend>
-
-                <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                  <TextField
-                    label="Prénom"
-                    name="firstName"
-                    autoComplete="given-name"
-                    required
-                    error={fieldErrors.firstName}
-                  />
-                  <TextField
-                    label="Nom"
-                    name="lastName"
-                    autoComplete="family-name"
-                    required
-                    error={fieldErrors.lastName}
-                  />
-                  <TextField
-                    label="Email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    error={fieldErrors.email}
-                  />
-                  <TextField
-                    label="Téléphone"
-                    name="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    required
-                    error={fieldErrors.phone}
-                  />
-                </div>
-              </fieldset>
-
-              <fieldset
-                disabled={Boolean(order)}
-                className="border-t border-border pt-10"
-              >
-                <legend className="type-heading-3">Mode de réception</legend>
-
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <Choice
-                    name="deliveryMethod"
-                    value="pickup"
-                    title="Retrait"
-                    description="Récupérer la commande directement auprès de Flo’s Bikes."
-                    checked={fulfillmentMethod === 'pickup'}
-                    onChange={() => setFulfillmentMethod('pickup')}
+              <div className="space-y-14">
+                <section>
+                  <SectionHeading
+                    number="01"
+                    title="Vos coordonnées"
+                    description="Ces informations servent uniquement au traitement de votre commande."
                   />
 
-                  <Choice
-                    name="deliveryMethod"
-                    value="delivery"
-                    title="Livraison"
-                    description={`Livraison : ${formatPrice(
-                      settings?.deliveryFeeCents ?? '0',
-                    )}.`}
-                    checked={fulfillmentMethod === 'delivery'}
-                    onChange={() => setFulfillmentMethod('delivery')}
-                  />
-                </div>
-              </fieldset>
-
-              {fulfillmentMethod === 'delivery' ? (
-                <fieldset
-                  disabled={Boolean(order)}
-                  className="border-t border-border pt-10"
-                >
-                  <legend className="type-heading-3">
-                    Adresse de livraison
-                  </legend>
-
-                  <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
+                  <fieldset className="mt-7">
+                    <div className="grid gap-5 sm:grid-cols-2">
                       <TextField
-                        label="Adresse"
-                        name="address"
-                        autoComplete="street-address"
+                        label="Prénom"
+                        name="firstName"
+                        autoComplete="given-name"
                         required
-                        error={fieldErrors.address}
+                        error={fieldErrors.firstName}
+                        className="min-h-12 rounded-xl border-black/10 bg-[#f7f5f1] px-4"
+                      />
+
+                      <TextField
+                        label="Nom"
+                        name="lastName"
+                        autoComplete="family-name"
+                        required
+                        error={fieldErrors.lastName}
+                        className="min-h-12 rounded-xl border-black/10 bg-[#f7f5f1] px-4"
+                      />
+
+                      <TextField
+                        label="Email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        error={fieldErrors.email}
+                        className="min-h-12 rounded-xl border-black/10 bg-[#f7f5f1] px-4"
+                      />
+
+                      <TextField
+                        label="Téléphone"
+                        name="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        required
+                        error={fieldErrors.phone}
+                        className="min-h-12 rounded-xl border-black/10 bg-[#f7f5f1] px-4"
                       />
                     </div>
+                  </fieldset>
+                </section>
 
-                    <TextField
-                      label="Code postal"
-                      name="postalCode"
-                      autoComplete="postal-code"
-                      required
-                      error={fieldErrors.postalCode}
-                    />
-
-                    <TextField
-                      label="Ville"
-                      name="city"
-                      autoComplete="address-level2"
-                      required
-                      error={fieldErrors.city}
-                    />
-
-                    <div className="sm:col-span-2">
-                      <TextField
-                        label="Pays"
-                        name="country"
-                        autoComplete="country-name"
-                        required
-                        error={fieldErrors.country}
-                      />
-                    </div>
-                  </div>
-                </fieldset>
-              ) : null}
-
-              <div className="border-t border-border pt-10">
-                <div className="flex gap-3 rounded-lg bg-brand-gray-50 p-5">
-                  <LockKeyhole
-                    aria-hidden="true"
-                    className="mt-0.5 size-5 shrink-0 text-primary"
+                <section className="border-t border-black/10 pt-12">
+                  <SectionHeading
+                    number="02"
+                    title="Mode de réception"
+                    description="Choisissez entre le retrait et la livraison."
                   />
 
-                  <div>
-                    <p className="font-medium">Paiement sécurisé avec Stripe</p>
-                    <p className="type-secondary mt-1 text-muted-foreground">
-                      Cette étape prépare la commande. Le paiement Stripe sera
-                      proposé à l’étape suivante du parcours.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+                  <fieldset className="mt-7">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Choice
+                        name="deliveryMethod"
+                        value="pickup"
+                        title="Retrait"
+                        description={
+                          settings?.address
+                            ? `Retrait à ${settings.address}.`
+                            : 'Récupérer votre vélo directement auprès de Flo’s Bikes.'
+                        }
+                        checked={fulfillmentMethod === 'pickup'}
+                        onChange={() => setFulfillmentMethod('pickup')}
+                        icon={<MapPin aria-hidden="true" className="size-5" />}
+                      />
 
-            <aside className="surface-card h-fit p-6 lg:sticky lg:top-6">
-              <h2 className="text-xl font-medium">Votre commande</h2>
+                      <Choice
+                        name="deliveryMethod"
+                        value="delivery"
+                        title="Livraison"
+                        description={`${formatPrice(
+                          settings?.deliveryFeeCents ?? '0',
+                        )} de frais de livraison.`}
+                        checked={fulfillmentMethod === 'delivery'}
+                        onChange={() => setFulfillmentMethod('delivery')}
+                        icon={<Truck aria-hidden="true" className="size-5" />}
+                      />
+                    </div>
+                  </fieldset>
+                </section>
 
-              <div className="mt-6 space-y-5 border-b border-border pb-5">
-                {cart.items.map((item) => (
-                  <div key={item.productId}>
-                    <p className="type-secondary uppercase tracking-[0.08em] text-muted-foreground">
-                      {item.brand}
-                    </p>
-                    <div className="mt-1 flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-medium">{item.model}</p>
-                        <p className="type-secondary mt-1 text-muted-foreground">
-                          Quantité : {item.quantity}
-                        </p>
+                {fulfillmentMethod === 'delivery' ? (
+                  <section className="border-t border-black/10 pt-12">
+                    <SectionHeading
+                      number="03"
+                      title="Adresse de livraison"
+                      description="Indiquez l’adresse à laquelle votre commande doit être envoyée."
+                    />
+
+                    <fieldset className="mt-7">
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <TextField
+                            label="Adresse"
+                            name="address"
+                            autoComplete="street-address"
+                            required
+                            error={fieldErrors.address}
+                            className="min-h-12 rounded-xl border-black/10 bg-[#f7f5f1] px-4"
+                          />
+                        </div>
+
+                        <TextField
+                          label="Code postal"
+                          name="postalCode"
+                          autoComplete="postal-code"
+                          required
+                          error={fieldErrors.postalCode}
+                          className="min-h-12 rounded-xl border-black/10 bg-[#f7f5f1] px-4"
+                        />
+
+                        <TextField
+                          label="Ville"
+                          name="city"
+                          autoComplete="address-level2"
+                          required
+                          error={fieldErrors.city}
+                          className="min-h-12 rounded-xl border-black/10 bg-[#f7f5f1] px-4"
+                        />
+
+                        <div className="sm:col-span-2">
+                          <TextField
+                            label="Pays"
+                            name="country"
+                            autoComplete="country-name"
+                            required
+                            error={fieldErrors.country}
+                            className="min-h-12 rounded-xl border-black/10 bg-[#f7f5f1] px-4"
+                          />
+                        </div>
                       </div>
-                      <p className="font-medium">
-                        {formatPrice(item.priceCents ?? '0')}
+                    </fieldset>
+                  </section>
+                ) : null}
+
+                <div className="border-t border-black/10 pt-12">
+                  <div className="flex gap-4 rounded-[1.5rem] bg-[#f7f5f1] p-5 ring-1 ring-black/5 sm:p-6">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-[#b44a42] ring-1 ring-black/5">
+                      <LockKeyhole aria-hidden="true" className="size-4" />
+                    </span>
+
+                    <div>
+                      <p className="text-sm font-medium text-[#171717]">
+                        Vos informations restent privées
+                      </p>
+
+                      <p className="mt-1.5 max-w-xl text-sm font-light leading-relaxed text-muted-foreground">
+                        Les coordonnées saisies servent au traitement et au
+                        suivi de cette commande.
                       </p>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
 
-              <dl className="mt-5 space-y-4">
-                <SummaryRow
-                  label="Sous-total"
-                  value={formatPrice(cart.totalCents)}
-                />
-                <SummaryRow
-                  label={
-                    fulfillmentMethod === 'pickup' ? 'Retrait' : 'Livraison'
-                  }
-                  value={
-                    fulfillmentMethod === 'pickup'
-                      ? 'Gratuit'
-                      : formatPrice(deliveryFeeCents)
-                  }
-                />
+              <aside className="h-fit lg:sticky lg:top-8">
+                <div className="rounded-[1.75rem] bg-[#f7f5f1] p-6 ring-1 ring-black/5 sm:p-7">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#b44a42]">
+                    Récapitulatif
+                  </p>
 
-                <div className="border-t border-border pt-4">
-                  <SummaryRow
-                    label="Total"
-                    value={formatPrice(totalCents)}
-                    strong
-                  />
-                </div>
-              </dl>
+                  <h2 className="mt-3 font-[Georgia,'Times_New_Roman',serif] text-3xl font-normal tracking-[-0.035em] text-[#171717]">
+                    Votre commande
+                  </h2>
 
-              {submitError ? (
-                <p className="type-secondary mt-5 text-destructive">
-                  {submitError}
-                </p>
-              ) : null}
+                  <div className="mt-7 divide-y divide-black/10 border-y border-black/10">
+                    {cart.items.map((item) => (
+                      <div key={item.productId} className="py-4">
+                        <div className="flex items-start justify-between gap-5">
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                              {item.brand}
+                            </p>
+                            <p className="mt-1 text-sm font-medium text-[#171717]">
+                              {item.model}
+                            </p>
+                          </div>
 
-              {order ? (
-                <div className="mt-6 rounded-lg bg-brand-gray-50 p-5">
-                  <div className="flex gap-3">
-                    <CheckCircle2
-                      aria-hidden="true"
-                      className="mt-0.5 size-5 shrink-0 text-primary"
+                          <p className="shrink-0 text-sm font-medium text-[#171717]">
+                            {formatPrice(item.priceCents ?? '0')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <dl className="mt-6 space-y-4">
+                    <SummaryRow
+                      label="Sous-total"
+                      value={formatPrice(cart.totalCents)}
                     />
-                    <div>
-                      <p className="font-medium">Commande préparée</p>
-                      <p className="type-secondary mt-1 text-muted-foreground">
-                        Commande n°{order.id} · Total serveur{' '}
-                        {formatPrice(order.totalCents)}.
-                      </p>
-                      <p className="type-secondary mt-2 text-muted-foreground">
-                        Aucun paiement n’a encore été effectué.
-                      </p>
+
+                    <SummaryRow
+                      label={
+                        fulfillmentMethod === 'pickup' ? 'Retrait' : 'Livraison'
+                      }
+                      value={
+                        fulfillmentMethod === 'pickup'
+                          ? 'Gratuit'
+                          : formatPrice(deliveryFeeCents)
+                      }
+                    />
+
+                    <div className="border-t border-black/10 pt-5">
+                      <SummaryRow
+                        label="Total"
+                        value={formatPrice(totalCents)}
+                        strong
+                      />
                     </div>
+                  </dl>
+
+                  {submitError ? (
+                    <div className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800 ring-1 ring-red-100">
+                      {submitError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={!canSubmit}
+                    className="group mt-7 inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-[#b44a42] px-7 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-[#9d4039] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <LoaderCircle
+                          aria-hidden="true"
+                          className="size-4 animate-spin"
+                        />
+                        Préparation…
+                      </>
+                    ) : (
+                      <>
+                        Créer la commande
+                        <ArrowRight
+                          aria-hidden="true"
+                          className="size-4 transition-transform duration-200 group-hover:translate-x-1"
+                        />
+                      </>
+                    )}
+                  </button>
+
+                  <div className="mt-6 flex gap-3 border-t border-black/10 pt-5">
+                    <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-white text-[#b44a42] ring-1 ring-black/5">
+                      <Check aria-hidden="true" className="size-3.5" />
+                    </span>
+
+                    <p className="text-xs font-light leading-relaxed text-muted-foreground">
+                      Prix, disponibilité et frais sont vérifiés côté serveur
+                      lors de la création de la commande.
+                    </p>
                   </div>
                 </div>
-              ) : (
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="mt-6 w-full"
-                  disabled={!canSubmit}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <LoaderCircle
-                        aria-hidden="true"
-                        className="size-4 animate-spin"
-                      />
-                      Préparation…
-                    </>
-                  ) : (
-                    'Préparer la commande'
-                  )}
-                </Button>
-              )}
-
-              <p className="type-secondary mt-4 text-muted-foreground">
-                Prix, disponibilité et frais sont revérifiés côté serveur lors
-                de la création de la commande.
-              </p>
-            </aside>
-          </form>
-        )}
+              </aside>
+            </form>
+          )}
+        </div>
       </section>
     </PublicPage>
+  )
+}
+
+function SectionHeading({
+  number,
+  title,
+  description,
+}: {
+  number: string
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex gap-5">
+      <span className="pt-1 text-xs font-medium tracking-[0.14em] text-[#b44a42]">
+        {number}
+      </span>
+
+      <div>
+        <h2 className="font-[Georgia,'Times_New_Roman',serif] text-3xl font-normal tracking-[-0.035em] text-[#171717] sm:text-4xl">
+          {title}
+        </h2>
+
+        <p className="mt-2 text-sm font-light leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -580,6 +633,7 @@ function Choice({
   description,
   checked,
   onChange,
+  icon,
 }: {
   name: string
   value: FulfillmentMethod
@@ -587,21 +641,49 @@ function Choice({
   description: string
   checked: boolean
   onChange: () => void
+  icon: React.ReactNode
 }) {
   return (
-    <label className="surface-card flex cursor-pointer gap-3 p-5">
+    <label
+      className={[
+        'relative flex cursor-pointer gap-4 rounded-[1.5rem] p-5 ring-1 transition-all sm:p-6',
+        checked
+          ? 'bg-[#f7f5f1] ring-[#b44a42]'
+          : 'bg-white ring-black/10 hover:ring-black/20',
+      ].join(' ')}
+    >
       <input
         type="radio"
         name={name}
         value={value}
         checked={checked}
         onChange={onChange}
-        className="mt-1 accent-brand-red"
+        className="sr-only"
       />
 
-      <span>
-        <span className="block font-medium">{title}</span>
-        <span className="type-secondary mt-1 block text-muted-foreground">
+      <span
+        className={[
+          'flex size-10 shrink-0 items-center justify-center rounded-full transition-colors',
+          checked
+            ? 'bg-[#b44a42] text-white'
+            : 'bg-[#f7f5f1] text-muted-foreground',
+        ].join(' ')}
+      >
+        {icon}
+      </span>
+
+      <span className="min-w-0">
+        <span className="flex items-center gap-2">
+          <span className="font-medium text-[#171717]">{title}</span>
+
+          {checked ? (
+            <span className="flex size-5 items-center justify-center rounded-full bg-[#b44a42]/10 text-[#b44a42]">
+              <Check aria-hidden="true" className="size-3" />
+            </span>
+          ) : null}
+        </span>
+
+        <span className="mt-1.5 block text-sm font-light leading-relaxed text-muted-foreground">
           {description}
         </span>
       </span>
@@ -622,14 +704,127 @@ function SummaryRow({
     <div className="flex items-center justify-between gap-4">
       <dt
         className={
-          strong ? 'font-medium' : 'type-secondary text-muted-foreground'
+          strong
+            ? 'text-sm font-medium text-[#171717]'
+            : 'text-sm text-muted-foreground'
         }
       >
         {label}
       </dt>
-      <dd className={strong ? 'text-xl font-medium' : 'font-medium'}>
+
+      <dd
+        className={
+          strong
+            ? 'text-2xl font-medium tracking-[-0.03em] text-[#171717]'
+            : 'text-sm font-medium text-[#171717]'
+        }
+      >
         {value}
       </dd>
+    </div>
+  )
+}
+
+function OrderSuccess({ order }: { order: CreatedDraftOrder }) {
+  return (
+    <div className="mx-auto max-w-3xl rounded-[2rem] bg-[#f7f5f1] px-6 py-14 text-center ring-1 ring-black/5 sm:px-12 sm:py-16">
+      <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100">
+        <CheckCircle2 aria-hidden="true" className="size-6" />
+      </span>
+
+      <p className="mt-7 text-xs font-medium uppercase tracking-[0.18em] text-[#b44a42]">
+        Commande créée
+      </p>
+
+      <h2 className="mt-3 font-[Georgia,'Times_New_Roman',serif] text-4xl font-normal tracking-[-0.04em] text-[#171717] sm:text-5xl">
+        Votre commande est enregistrée.
+      </h2>
+
+      <p className="mx-auto mt-5 max-w-lg text-sm font-light leading-relaxed text-muted-foreground">
+        Commande n°{order.id} · Montant total {formatPrice(order.totalCents)}.
+        Aucun paiement n’a encore été enregistré.
+      </p>
+
+      <a
+        href={`/commande/${encodeURIComponent(order.trackingToken)}`}
+        className="group mt-8 inline-flex min-h-13 items-center justify-center gap-3 rounded-full bg-[#171717] px-7 text-sm font-medium text-white transition-colors hover:bg-black/80"
+      >
+        <PackageCheck aria-hidden="true" className="size-4" />
+        Voir le suivi de commande
+        <ArrowRight
+          aria-hidden="true"
+          className="size-4 transition-transform duration-200 group-hover:translate-x-1"
+        />
+      </a>
+    </div>
+  )
+}
+
+function StateCard({
+  title,
+  text,
+  href,
+  action,
+  tone = 'default',
+}: {
+  title: string
+  text: string
+  href: string
+  action: string
+  tone?: 'default' | 'error'
+}) {
+  return (
+    <div
+      className={[
+        'mx-auto max-w-3xl rounded-[2rem] px-6 py-14 text-center ring-1 sm:px-12',
+        tone === 'error'
+          ? 'bg-red-50 ring-red-100'
+          : 'bg-[#f7f5f1] ring-black/5',
+      ].join(' ')}
+    >
+      <h2 className="font-[Georgia,'Times_New_Roman',serif] text-4xl font-normal tracking-[-0.04em] text-[#171717]">
+        {title}
+      </h2>
+
+      <p className="mx-auto mt-4 max-w-lg text-sm font-light leading-relaxed text-muted-foreground">
+        {text}
+      </p>
+
+      <a
+        href={href}
+        className="group mt-8 inline-flex min-h-13 items-center justify-center gap-3 rounded-full bg-[#171717] px-7 text-sm font-medium text-white transition-colors hover:bg-black/80"
+      >
+        {action}
+        <ArrowRight
+          aria-hidden="true"
+          className="size-4 transition-transform duration-200 group-hover:translate-x-1"
+        />
+      </a>
+    </div>
+  )
+}
+
+function CheckoutSkeleton() {
+  return (
+    <div
+      className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-16"
+      aria-hidden="true"
+    >
+      <div className="space-y-14">
+        {Array.from({ length: 2 }).map((_, index) => (
+          <div key={index}>
+            <div className="h-8 w-52 animate-pulse rounded-full bg-black/5" />
+            <div className="mt-3 h-4 w-80 max-w-full animate-pulse rounded-full bg-black/5" />
+
+            <div className="mt-7 grid gap-5 sm:grid-cols-2">
+              <div className="h-20 animate-pulse rounded-xl bg-black/5" />
+              <div className="h-20 animate-pulse rounded-xl bg-black/5" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="h-[30rem] animate-pulse rounded-[1.75rem] bg-black/5" />
     </div>
   )
 }
