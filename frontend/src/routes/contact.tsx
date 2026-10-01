@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Mail, MapPin, Phone } from 'lucide-react'
+import { ArrowUpRight, Mail, MapPin, Phone } from 'lucide-react'
 import type { ReactNode } from 'react'
 
-import { FlowState } from '@/components/feedback/flow-state'
 import {
   PublicPage,
   type PublicContactDetails,
@@ -25,90 +24,134 @@ function ContactContent({ contact }: { contact: PublicContactDetails | null }) {
     Boolean(contact?.address)
 
   return (
-    <section className="site-container section-space">
-      <div className="max-w-3xl">
-        <p className="type-label uppercase tracking-[0.16em] text-primary">
-          Contact
-        </p>
+    <>
+      <section className="border-b border-black/8 bg-[#f7f5f1]">
+        <div className="site-container py-16 sm:py-20 lg:py-24">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#b44a42]">
+            Contact
+          </p>
 
-        <h1 className="type-display mt-3">Parlons vélo.</h1>
+          <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-end">
+            <h1 className="max-w-4xl font-[Georgia,'Times_New_Roman',serif] text-[clamp(3.3rem,6.5vw,6rem)] font-normal leading-[0.93] tracking-[-0.06em] text-[#171717]">
+              Une question ?
+              <br />
+              Parlons vélo.
+            </h1>
 
-        <p className="type-body mt-5 text-muted-foreground">
-          Une question sur un vélo, une réservation ou une reprise ? Retrouvez
-          ici les coordonnées de Flo&apos;s Bikes.
-        </p>
-      </div>
-
-      <div className="mt-12">
-        {!hasContact ? (
-          <FlowState
-            kind="empty"
-            title="Coordonnées bientôt disponibles"
-            description="Les informations de contact n’ont pas encore été configurées."
-          />
-        ) : (
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {contact?.phone ? (
-              <ContactCard
-                icon={<Phone aria-hidden="true" className="size-6" />}
-                title="Téléphone"
-                value={contact.phone}
-                href={`tel:${contact.phone}`}
-              />
-            ) : null}
-
-            {contact?.email ? (
-              <ContactCard
-                icon={<Mail aria-hidden="true" className="size-6" />}
-                title="Email"
-                value={contact.email}
-                href={`mailto:${contact.email}`}
-              />
-            ) : null}
-
-            {contact?.address ? (
-              <ContactCard
-                icon={<MapPin aria-hidden="true" className="size-6" />}
-                title="Adresse"
-                value={contact.address}
-              />
-            ) : null}
+            <p className="max-w-md text-base font-light leading-relaxed text-muted-foreground">
+              Un vélo vous intéresse, vous avez une question sur une commande,
+              une réservation ou une reprise ? Contactez directement Flo’s
+              Bikes.
+            </p>
           </div>
-        )}
-      </div>
-    </section>
+        </div>
+      </section>
+
+      <section className="bg-white py-14 sm:py-18 lg:py-24">
+        <div className="site-container">
+          {!hasContact ? (
+            <div className="mx-auto max-w-2xl rounded-[2rem] bg-[#f7f5f1] px-6 py-14 text-center ring-1 ring-black/5 sm:px-10">
+              <h2 className="font-[Georgia,'Times_New_Roman',serif] text-3xl font-normal tracking-[-0.035em] text-[#171717] sm:text-4xl">
+                Coordonnées bientôt disponibles.
+              </h2>
+
+              <p className="mx-auto mt-4 max-w-md text-sm font-light leading-relaxed text-muted-foreground">
+                Les informations de contact de Flo’s Bikes n’ont pas encore été
+                configurées.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {contact?.phone ? (
+                <ContactCard
+                  icon={<Phone aria-hidden="true" className="size-5" />}
+                  eyebrow="Téléphone"
+                  value={contact.phone}
+                  description="Appelez-nous directement."
+                  href={`tel:${contact.phone}`}
+                />
+              ) : null}
+
+              {contact?.email ? (
+                <ContactCard
+                  icon={<Mail aria-hidden="true" className="size-5" />}
+                  eyebrow="Email"
+                  value={contact.email}
+                  description="Écrivez-nous par email."
+                  href={`mailto:${contact.email}`}
+                />
+              ) : null}
+
+              {contact?.address ? (
+                <ContactCard
+                  icon={<MapPin aria-hidden="true" className="size-5" />}
+                  eyebrow="Adresse"
+                  value={contact.address}
+                  description="Adresse publique de Flo’s Bikes."
+                />
+              ) : null}
+            </div>
+          )}
+        </div>
+      </section>
+    </>
   )
 }
 
 function ContactCard({
   icon,
-  title,
+  eyebrow,
   value,
+  description,
   href,
 }: {
   icon: ReactNode
-  title: string
+  eyebrow: string
   value: string
+  description: string
   href?: string
 }) {
-  return (
-    <div className="surface-card p-6 lg:p-8">
-      <div className="text-primary">{icon}</div>
+  const content = (
+    <>
+      <div className="flex items-start justify-between gap-6">
+        <span className="flex size-11 items-center justify-center rounded-full bg-[#f7f5f1] text-[#b44a42] ring-1 ring-black/5">
+          {icon}
+        </span>
 
-      <h2 className="type-heading-3 mt-5">{title}</h2>
+        {href ? (
+          <ArrowUpRight
+            aria-hidden="true"
+            className="size-5 text-black/25 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#b44a42]"
+          />
+        ) : null}
+      </div>
 
-      {href ? (
-        <a
-          href={href}
-          className="type-body mt-3 block break-words text-muted-foreground transition-colors hover:text-primary"
-        >
-          {value}
-        </a>
-      ) : (
-        <p className="type-body mt-3 break-words text-muted-foreground">
+      <div className="mt-10">
+        <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          {eyebrow}
+        </p>
+
+        <p className="mt-3 break-words font-[Georgia,'Times_New_Roman',serif] text-2xl font-normal tracking-[-0.03em] text-[#171717] sm:text-3xl">
           {value}
         </p>
-      )}
-    </div>
+
+        <p className="mt-4 text-sm font-light leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      </div>
+    </>
   )
+
+  const className =
+    'group flex min-h-[19rem] flex-col justify-between rounded-[1.75rem] bg-[#f7f5f1] p-6 ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-1 hover:ring-black/10 sm:p-7'
+
+  if (href) {
+    return (
+      <a href={href} className={className}>
+        {content}
+      </a>
+    )
+  }
+
+  return <div className={className}>{content}</div>
 }
