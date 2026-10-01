@@ -27,18 +27,18 @@ export function PublicHeader({ variant = 'default' }: PublicHeaderProps) {
       className={
         isOverlay
           ? 'absolute inset-x-0 top-0 z-50 border-b border-white/15 bg-black/10 text-white backdrop-blur-[2px]'
-          : 'border-b border-border bg-background'
+          : 'relative z-50 border-b border-black/8 bg-white'
       }
     >
-      <div className="site-container flex h-20 items-center justify-between gap-8">
+      <div className="site-container flex h-[4.75rem] items-center justify-between gap-8 sm:h-20">
         <a href="/" aria-label="Flo's Bikes — Accueil" className="shrink-0">
           <img
             src="/flos-bikes-logo.png"
             alt="Flo's Bikes"
             className={
               isOverlay
-                ? 'h-11 w-auto rounded-sm bg-white/95 p-1.5 object-contain shadow-sm'
-                : 'h-12 w-auto object-contain'
+                ? 'h-10 w-auto rounded-sm bg-white/95 p-1.5 object-contain shadow-sm sm:h-11'
+                : 'h-10 w-auto object-contain sm:h-11'
             }
           />
         </a>
@@ -53,8 +53,8 @@ export function PublicHeader({ variant = 'default' }: PublicHeaderProps) {
               href={item.href}
               className={
                 isOverlay
-                  ? 'type-label relative py-2 text-white/90 transition-colors hover:text-white focus-visible:text-white'
-                  : 'type-label relative py-2 text-foreground transition-colors hover:text-primary focus-visible:text-primary'
+                  ? 'relative py-2 text-sm font-normal text-white/85 transition-colors hover:text-white focus-visible:text-white'
+                  : 'relative py-2 text-sm font-normal text-[#171717]/75 transition-colors hover:text-[#b44a42] focus-visible:text-[#b44a42]'
               }
             >
               {item.label}
@@ -62,7 +62,7 @@ export function PublicHeader({ variant = 'default' }: PublicHeaderProps) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <a
             href="/panier"
             aria-label={`Panier, ${displayedItemCount} ${
@@ -71,24 +71,20 @@ export function PublicHeader({ variant = 'default' }: PublicHeaderProps) {
             className={
               isOverlay
                 ? 'relative inline-flex size-11 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10'
-                : 'relative inline-flex size-11 items-center justify-center rounded-md transition-colors hover:bg-muted'
+                : 'relative inline-flex size-11 items-center justify-center rounded-full text-[#171717] transition-colors hover:bg-[#f7f5f1]'
             }
           >
             <ShoppingBag
               aria-hidden="true"
               className="size-5"
-              strokeWidth={1.8}
+              strokeWidth={1.7}
             />
 
-            <span
-              className={
-                isOverlay
-                  ? 'absolute right-1 top-1 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-[#b44a42] px-1 text-[10px] font-medium leading-none text-white'
-                  : 'absolute right-1.5 top-1.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium leading-none text-primary-foreground'
-              }
-            >
-              {displayedItemCount}
-            </span>
+            {displayedItemCount > 0 ? (
+              <span className="absolute right-0.5 top-0.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-[#b44a42] px-1 text-[10px] font-medium leading-none text-white">
+                {displayedItemCount}
+              </span>
+            ) : null}
           </a>
 
           <button
@@ -100,13 +96,13 @@ export function PublicHeader({ variant = 'default' }: PublicHeaderProps) {
             className={
               isOverlay
                 ? 'inline-flex size-11 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 lg:hidden'
-                : 'inline-flex size-11 items-center justify-center rounded-md transition-colors hover:bg-muted lg:hidden'
+                : 'inline-flex size-11 items-center justify-center rounded-full text-[#171717] transition-colors hover:bg-[#f7f5f1] lg:hidden'
             }
           >
             {mobileOpen ? (
-              <X aria-hidden="true" className="size-6" strokeWidth={1.7} />
+              <X aria-hidden="true" className="size-6" strokeWidth={1.6} />
             ) : (
-              <Menu aria-hidden="true" className="size-6" strokeWidth={1.7} />
+              <Menu aria-hidden="true" className="size-6" strokeWidth={1.6} />
             )}
           </button>
         </div>
@@ -119,10 +115,10 @@ export function PublicHeader({ variant = 'default' }: PublicHeaderProps) {
           className={
             isOverlay
               ? 'border-t border-white/10 bg-[#171717]/95 text-white backdrop-blur-xl lg:hidden'
-              : 'border-t border-border bg-background lg:hidden'
+              : 'border-t border-black/8 bg-white lg:hidden'
           }
         >
-          <div className="site-container flex flex-col py-3">
+          <div className="site-container py-2">
             {navigation.map((item) => (
               <a
                 key={item.href}
@@ -130,8 +126,8 @@ export function PublicHeader({ variant = 'default' }: PublicHeaderProps) {
                 onClick={() => setMobileOpen(false)}
                 className={
                   isOverlay
-                    ? 'flex min-h-12 items-center border-b border-white/10 py-3 text-base font-medium last:border-b-0'
-                    : 'flex min-h-12 items-center border-b border-border/70 py-3 text-base font-medium last:border-b-0'
+                    ? 'flex min-h-12 items-center border-b border-white/10 py-3 text-base font-normal last:border-b-0'
+                    : 'flex min-h-12 items-center border-b border-black/8 py-3 text-base font-normal text-[#171717] last:border-b-0'
                 }
               >
                 {item.label}

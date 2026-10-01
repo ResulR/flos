@@ -15,7 +15,12 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: "Flo's Bikes — Vélos d'occasion",
+      },
+      {
+        name: 'description',
+        content:
+          'Découvrez les vélos d’occasion proposés par Flo’s Bikes, réservez votre vélo ou envoyez une demande de reprise.',
       },
     ],
     links: [
@@ -30,7 +35,7 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
         <HeadContent />
       </head>
