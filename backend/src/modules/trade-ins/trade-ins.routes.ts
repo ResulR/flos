@@ -7,6 +7,10 @@ import {
   uploadTradeInMediaController,
 } from './trade-ins.controller.js'
 import {
+  tradeInCreateRateLimit,
+  tradeInMediaRateLimit,
+} from './trade-ins.rate-limit.js'
+import {
   createTradeInSchema,
   tradeInMediaParamsSchema,
 } from './trade-ins.schemas.js'
@@ -15,12 +19,14 @@ export const tradeInsRouter = Router()
 
 tradeInsRouter.post(
   '/',
+  tradeInCreateRateLimit,
   validateRequest({ body: createTradeInSchema }),
   createTradeInController,
 )
 
 tradeInsRouter.post(
   '/:tradeInId/media',
+  tradeInMediaRateLimit,
   validateRequest({
     params: tradeInMediaParamsSchema,
   }),
