@@ -6,7 +6,7 @@ export type ProductCardStatus = 'available' | 'reserved' | 'sold'
 
 type ProductCardProps = {
   href: string
-  variant?: 'default' | 'editorial'
+  variant?: 'default' | 'editorial' | 'catalogue'
   imageSrc?: string | null
   brand: string
   model: string
@@ -34,6 +34,7 @@ export function ProductCard({
   reservedUntil,
 }: ProductCardProps) {
   const isEditorial = variant === 'editorial'
+  const isCatalogue = variant === 'catalogue'
 
   return (
     <article className="group">
@@ -43,7 +44,9 @@ export function ProductCard({
             'relative overflow-hidden bg-brand-gray-100',
             isEditorial
               ? 'aspect-[5/4] rounded-[1.25rem]'
-              : 'aspect-[4/3] rounded-xl',
+              : isCatalogue
+                ? 'aspect-[4/3] rounded-[1.5rem] ring-1 ring-black/5'
+                : 'aspect-[4/3] rounded-xl',
           ].join(' ')}
         >
           {imageSrc ? (
@@ -52,7 +55,7 @@ export function ProductCard({
               alt={`${brand} ${model}`}
               className={[
                 'size-full object-cover transition-transform',
-                isEditorial
+                isEditorial || isCatalogue
                   ? 'duration-500 group-hover:scale-[1.035]'
                   : 'duration-300 group-hover:scale-[1.025]',
               ].join(' ')}
@@ -63,30 +66,32 @@ export function ProductCard({
             </div>
           )}
 
-          <div className="absolute left-3 top-3">
-            <span
-              className={[
-                'inline-flex items-center text-xs font-medium',
-                isEditorial
-                  ? 'min-h-7 rounded-full bg-white/92 px-3 text-brand-black shadow-sm backdrop-blur-sm'
-                  : 'min-h-7 rounded-md px-2.5',
-                status === 'available'
-                  ? isEditorial
-                    ? ''
-                    : 'bg-brand-white text-brand-black'
-                  : status === 'reserved'
-                    ? 'bg-brand-black text-brand-white'
-                    : 'bg-brand-gray-600 text-brand-white',
-              ].join(' ')}
-            >
-              {status === 'reserved' && reservedUntil
-                ? `Réservé jusqu’au ${reservedUntil}`
-                : statusLabels[status]}
-            </span>
-          </div>
+          {!(isCatalogue && status === 'available') ? (
+            <div className="absolute left-3 top-3">
+              <span
+                className={[
+                  'inline-flex items-center text-xs font-medium',
+                  isEditorial
+                    ? 'min-h-7 rounded-full bg-white/92 px-3 text-brand-black shadow-sm backdrop-blur-sm'
+                    : 'min-h-7 rounded-md px-2.5',
+                  status === 'available'
+                    ? isEditorial
+                      ? ''
+                      : 'bg-brand-white text-brand-black'
+                    : status === 'reserved'
+                      ? 'bg-brand-black text-brand-white'
+                      : 'bg-brand-gray-600 text-brand-white',
+                ].join(' ')}
+              >
+                {status === 'reserved' && reservedUntil
+                  ? `Réservé jusqu’au ${reservedUntil}`
+                  : statusLabels[status]}
+              </span>
+            </div>
+          ) : null}
         </div>
 
-        <div className={isEditorial ? 'pt-5' : 'pt-4'}>
+        <div className={isEditorial || isCatalogue ? 'pt-5' : 'pt-4'}>
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="type-secondary uppercase tracking-[0.08em] text-muted-foreground">
@@ -97,7 +102,9 @@ export function ProductCard({
                 className={
                   isEditorial
                     ? 'mt-1 text-[1.45rem] font-medium leading-tight tracking-[-0.02em]'
-                    : 'type-product-title mt-1'
+                    : isCatalogue
+                      ? 'mt-1 text-[1.35rem] font-medium leading-tight tracking-[-0.025em]'
+                      : 'type-product-title mt-1'
                 }
               >
                 {model}
@@ -108,7 +115,7 @@ export function ProductCard({
               aria-hidden="true"
               className={[
                 'mt-1 size-5 shrink-0 text-muted-foreground transition-all duration-300',
-                isEditorial
+                isEditorial || isCatalogue
                   ? 'group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[#b44a42]'
                   : 'group-hover:text-primary',
               ].join(' ')}
@@ -118,14 +125,16 @@ export function ProductCard({
           <div
             className={[
               'flex items-end justify-between gap-4 border-t border-border',
-              isEditorial ? 'mt-5 pt-4' : 'mt-4 pt-4',
+              isEditorial || isCatalogue ? 'mt-5 pt-4' : 'mt-4 pt-4',
             ].join(' ')}
           >
             <p
               className={
                 isEditorial
                   ? 'text-xl font-medium tracking-[-0.02em]'
-                  : 'type-price'
+                  : isCatalogue
+                    ? 'text-[1.35rem] font-medium tracking-[-0.025em]'
+                    : 'type-price'
               }
             >
               {priceLabel}
