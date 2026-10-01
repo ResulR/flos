@@ -1,10 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { ArrowLeft, Check, Clock3, ShieldCheck } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
-import { ArrowLeft, Check, Clock3 } from 'lucide-react'
 
-import { FlowState } from '@/components/feedback/flow-state'
 import { PublicPage } from '@/components/layout/public-page'
-import { Button } from '@/components/ui/button'
 import { TextField } from '@/components/ui/field'
 import { ApiClientError, apiRequest, buildApiUrl } from '@/lib/api'
 
@@ -68,6 +66,7 @@ function formatExpiration(value: string | Date) {
 
 function ReservationPage() {
   const { productId } = Route.useParams()
+
   const [product, setProduct] = useState<ReservationProduct | null>(null)
   const [form, setForm] = useState<ReservationForm>(initialForm)
   const [fieldErrors, setFieldErrors] = useState<ReservationFieldErrors>({})
@@ -202,13 +201,7 @@ function ReservationPage() {
   if (isLoading) {
     return (
       <PublicPage>
-        <section className="site-container section-space">
-          <FlowState
-            kind="loading"
-            title="Chargement du vélo"
-            description="Les informations du vélo sont en cours de chargement."
-          />
-        </section>
+        <ReservationSkeleton />
       </PublicPage>
     )
   }
@@ -216,12 +209,18 @@ function ReservationPage() {
   if (loadError || !product) {
     return (
       <PublicPage>
-        <section className="site-container section-space">
-          <FlowState
-            kind="error"
-            title="Vélo indisponible"
-            description={loadError ?? 'Ce vélo est introuvable.'}
-          />
+        <section className="bg-white py-16 sm:py-20">
+          <div className="site-container">
+            <div className="mx-auto max-w-2xl rounded-[2rem] bg-red-50 px-6 py-14 text-center ring-1 ring-red-100">
+              <h1 className="font-[Georgia,'Times_New_Roman',serif] text-4xl font-normal tracking-[-0.04em] text-[#171717]">
+                Vélo indisponible
+              </h1>
+
+              <p className="mt-4 text-sm text-muted-foreground">
+                {loadError ?? 'Ce vélo est introuvable.'}
+              </p>
+            </div>
+          </div>
         </section>
       </PublicPage>
     )
@@ -233,233 +232,432 @@ function ReservationPage() {
 
   return (
     <PublicPage>
-      <section className="site-container py-10 lg:py-14">
-        <a
-          href={`/produits/${product.id}`}
-          className="type-secondary inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft aria-hidden="true" className="size-4" />
-          Retour au vélo
-        </a>
+      <section className="border-b border-black/8 bg-[#f7f5f1]">
+        <div className="site-container py-10 sm:py-12">
+          <a
+            href={`/produits/${product.id}`}
+            className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-[#171717]"
+          >
+            <ArrowLeft
+              aria-hidden="true"
+              className="size-4 transition-transform duration-200 group-hover:-translate-x-1"
+            />
+            Retour au vélo
+          </a>
+        </div>
+      </section>
 
-        <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_22rem]">
-          <div>
-            <p className="type-label uppercase tracking-[0.16em] text-primary">
-              Réservation gratuite
-            </p>
+      <section className="bg-[#f7f5f1] pb-16 sm:pb-20 lg:pb-24">
+        <div className="site-container">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_25rem]">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#b44a42]">
+                Réservation gratuite
+              </p>
 
-            <h1 className="type-display mt-3">Garder ce vélo de côté.</h1>
+              <h1 className="mt-4 max-w-3xl font-[Georgia,'Times_New_Roman',serif] text-[clamp(3.1rem,5.5vw,5.3rem)] font-normal leading-[0.95] tracking-[-0.055em] text-[#171717]">
+                Garder ce vélo de côté.
+              </h1>
 
-            <p className="type-body mt-5 max-w-2xl text-muted-foreground">
-              Une réservation rend immédiatement le vélo indisponible à l’achat
-              et aux autres réservations pendant la durée choisie.
-            </p>
-
-            {reservation ? (
-              <div
-                role="status"
-                className="mt-10 rounded-lg border border-border bg-brand-gray-50 p-6"
-              >
-                <div className="flex gap-3">
-                  <Check
-                    aria-hidden="true"
-                    className="mt-0.5 size-5 shrink-0 text-primary"
-                  />
-
-                  <div>
-                    <h2 className="type-heading-3">Réservation confirmée</h2>
-                    <p className="type-body mt-2 text-muted-foreground">
-                      Ce vélo est maintenant réservé pour vous jusqu’au{' '}
-                      {formatExpiration(reservation.expiresAt)}.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : isUnavailable ? (
-              <div className="mt-10">
-                <FlowState
-                  kind="error"
-                  title={
-                    product.status === 'reserved'
-                      ? 'Vélo déjà réservé'
-                      : 'Vélo indisponible'
-                  }
-                  description={
-                    product.status === 'reserved' && product.reservedUntil
-                      ? `Ce vélo est réservé jusqu’au ${formatExpiration(product.reservedUntil)}.`
-                      : 'Ce vélo ne peut actuellement pas être réservé.'
-                  }
-                />
-              </div>
-            ) : (
-              <form className="mt-10 space-y-8" onSubmit={handleSubmit}>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <TextField
-                    label="Prénom"
-                    name="firstName"
-                    autoComplete="given-name"
-                    value={form.firstName}
-                    error={fieldErrors.firstName}
-                    disabled={isSubmitting}
-                    onChange={(event) =>
-                      updateField('firstName', event.target.value)
-                    }
-                  />
-
-                  <TextField
-                    label="Nom"
-                    name="lastName"
-                    autoComplete="family-name"
-                    value={form.lastName}
-                    error={fieldErrors.lastName}
-                    disabled={isSubmitting}
-                    onChange={(event) =>
-                      updateField('lastName', event.target.value)
-                    }
-                  />
-
-                  <TextField
-                    label="Email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    value={form.email}
-                    error={fieldErrors.email}
-                    disabled={isSubmitting}
-                    onChange={(event) =>
-                      updateField('email', event.target.value)
-                    }
-                  />
-
-                  <TextField
-                    label="Téléphone"
-                    name="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    value={form.phone}
-                    error={fieldErrors.phone}
-                    disabled={isSubmitting}
-                    onChange={(event) =>
-                      updateField('phone', event.target.value)
-                    }
-                  />
-                </div>
-
-                <fieldset
-                  className="border-t border-border pt-8"
-                  disabled={isSubmitting}
-                >
-                  <legend className="type-heading-3">Durée</legend>
-
-                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    {([1, 2, 3] as const).map((day) => (
-                      <label
-                        key={day}
-                        className="surface-card cursor-pointer p-4 text-center"
-                      >
-                        <input
-                          type="radio"
-                          name="durationDays"
-                          value={day}
-                          checked={form.durationDays === day}
-                          onChange={() => updateField('durationDays', day)}
-                          className="mb-3 accent-brand-red"
-                        />
-                        <span className="block font-medium">
-                          {day} {day === 1 ? 'jour' : 'jours'}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-
-                  {fieldErrors.durationDays ? (
-                    <p className="type-secondary mt-2 text-destructive">
-                      {fieldErrors.durationDays}
-                    </p>
-                  ) : null}
-                </fieldset>
-
-                <div className="rounded-lg bg-brand-gray-50 p-5">
-                  <div className="flex gap-3">
-                    <Clock3
-                      aria-hidden="true"
-                      className="mt-0.5 size-5 shrink-0 text-primary"
-                    />
-                    <div>
-                      <p className="font-medium">Expiration estimée</p>
-                      <p className="type-secondary mt-1 text-muted-foreground">
-                        {estimatedExpiration
-                          ? `En confirmant maintenant, la réservation expirerait environ le ${formatExpiration(estimatedExpiration)}.`
-                          : 'Calcul de l’expiration…'}{' '}
-                        L’heure exacte sera calculée par le serveur.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {submitError ? (
-                  <p
-                    role="alert"
-                    className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-                  >
-                    {submitError}
-                  </p>
-                ) : null}
-
-                <Button type="submit" size="lg" disabled={isSubmitting}>
-                  {isSubmitting
-                    ? 'Réservation en cours…'
-                    : 'Confirmer la réservation gratuite'}
-                </Button>
-              </form>
-            )}
-          </div>
-
-          <aside className="surface-card h-fit p-6">
-            <div className="aspect-[4/3] overflow-hidden rounded-lg bg-brand-gray-100">
-              {firstMedia ? (
-                <img
-                  src={buildApiUrl(firstMedia.imageUrl)}
-                  alt={`${product.brand} ${product.model}`}
-                  className="size-full object-cover"
-                />
-              ) : null}
-            </div>
-
-            <p className="type-secondary mt-5 uppercase tracking-[0.08em] text-muted-foreground">
-              {product.brand}
-            </p>
-
-            <h2 className="type-product-title mt-1">{product.model}</h2>
-
-            <p className="type-price mt-4">{formatPrice(product.priceCents)}</p>
-
-            <div className="mt-6 border-t border-border pt-5">
-              <p
-                className={`text-sm font-medium ${
-                  isReserved ? 'text-muted-foreground' : 'text-primary'
-                }`}
-              >
-                {isReserved
-                  ? 'Réservé'
-                  : product.status === 'available'
-                    ? 'Disponible'
-                    : 'Vendu'}
+              <p className="mt-5 max-w-2xl text-base font-light leading-relaxed text-muted-foreground">
+                Une réservation rend immédiatement ce vélo indisponible pour les
+                autres clients pendant la durée choisie.
               </p>
 
               {reservation ? (
-                <p className="type-secondary mt-2 text-muted-foreground">
-                  Jusqu’au {formatExpiration(reservation.expiresAt)}
-                </p>
-              ) : product.status === 'reserved' && product.reservedUntil ? (
-                <p className="type-secondary mt-2 text-muted-foreground">
-                  Jusqu’au {formatExpiration(product.reservedUntil)}
-                </p>
-              ) : null}
+                <ReservationSuccess reservation={reservation} />
+              ) : isUnavailable ? (
+                <UnavailableState product={product} />
+              ) : (
+                <form className="mt-12" onSubmit={handleSubmit}>
+                  <section>
+                    <SectionHeading
+                      number="01"
+                      title="Vos coordonnées"
+                      description="Nous utilisons ces informations uniquement pour identifier votre réservation."
+                    />
+
+                    <div className="mt-7 grid gap-5 sm:grid-cols-2">
+                      <TextField
+                        label="Prénom"
+                        name="firstName"
+                        autoComplete="given-name"
+                        value={form.firstName}
+                        error={fieldErrors.firstName}
+                        disabled={isSubmitting}
+                        required
+                        className="min-h-12 rounded-xl border-black/10 bg-white px-4"
+                        onChange={(event) =>
+                          updateField('firstName', event.target.value)
+                        }
+                      />
+
+                      <TextField
+                        label="Nom"
+                        name="lastName"
+                        autoComplete="family-name"
+                        value={form.lastName}
+                        error={fieldErrors.lastName}
+                        disabled={isSubmitting}
+                        required
+                        className="min-h-12 rounded-xl border-black/10 bg-white px-4"
+                        onChange={(event) =>
+                          updateField('lastName', event.target.value)
+                        }
+                      />
+
+                      <TextField
+                        label="Email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        value={form.email}
+                        error={fieldErrors.email}
+                        disabled={isSubmitting}
+                        required
+                        className="min-h-12 rounded-xl border-black/10 bg-white px-4"
+                        onChange={(event) =>
+                          updateField('email', event.target.value)
+                        }
+                      />
+
+                      <TextField
+                        label="Téléphone"
+                        name="phone"
+                        type="tel"
+                        autoComplete="tel"
+                        value={form.phone}
+                        error={fieldErrors.phone}
+                        disabled={isSubmitting}
+                        required
+                        className="min-h-12 rounded-xl border-black/10 bg-white px-4"
+                        onChange={(event) =>
+                          updateField('phone', event.target.value)
+                        }
+                      />
+                    </div>
+                  </section>
+
+                  <section className="mt-12 border-t border-black/10 pt-12">
+                    <SectionHeading
+                      number="02"
+                      title="Durée de réservation"
+                      description="Choisissez combien de temps vous souhaitez garder ce vélo de côté."
+                    />
+
+                    <fieldset className="mt-7" disabled={isSubmitting}>
+                      <div className="grid gap-4 sm:grid-cols-3">
+                        {([1, 2, 3] as const).map((day) => {
+                          const selected = form.durationDays === day
+
+                          return (
+                            <label
+                              key={day}
+                              className={[
+                                'cursor-pointer rounded-[1.5rem] p-5 ring-1 transition-all',
+                                selected
+                                  ? 'bg-white ring-[#b44a42]'
+                                  : 'bg-white/60 ring-black/10 hover:ring-black/20',
+                              ].join(' ')}
+                            >
+                              <input
+                                type="radio"
+                                name="durationDays"
+                                value={day}
+                                checked={selected}
+                                onChange={() =>
+                                  updateField('durationDays', day)
+                                }
+                                className="sr-only"
+                              />
+
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-2xl font-medium tracking-[-0.03em] text-[#171717]">
+                                    {day}
+                                  </p>
+                                  <p className="mt-1 text-sm text-muted-foreground">
+                                    {day === 1 ? 'jour' : 'jours'}
+                                  </p>
+                                </div>
+
+                                <span
+                                  className={[
+                                    'flex size-8 items-center justify-center rounded-full',
+                                    selected
+                                      ? 'bg-[#b44a42] text-white'
+                                      : 'bg-[#f7f5f1] text-transparent',
+                                  ].join(' ')}
+                                >
+                                  <Check
+                                    aria-hidden="true"
+                                    className="size-4"
+                                  />
+                                </span>
+                              </div>
+                            </label>
+                          )
+                        })}
+                      </div>
+
+                      {fieldErrors.durationDays ? (
+                        <p className="mt-3 text-sm text-red-700">
+                          {fieldErrors.durationDays}
+                        </p>
+                      ) : null}
+                    </fieldset>
+                  </section>
+
+                  <div className="mt-8 rounded-[1.5rem] bg-white p-5 ring-1 ring-black/5 sm:p-6">
+                    <div className="flex gap-4">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#b44a42]/10 text-[#b44a42]">
+                        <Clock3 aria-hidden="true" className="size-5" />
+                      </span>
+
+                      <div>
+                        <p className="text-sm font-medium text-[#171717]">
+                          Expiration estimée
+                        </p>
+
+                        <p className="mt-1.5 text-sm font-light leading-relaxed text-muted-foreground">
+                          {estimatedExpiration
+                            ? `Si vous confirmez maintenant, la réservation expirera environ le ${formatExpiration(estimatedExpiration)}.`
+                            : 'Calcul de l’expiration…'}{' '}
+                          L’heure exacte sera déterminée par le serveur.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex gap-4 rounded-[1.5rem] bg-white p-5 ring-1 ring-black/5 sm:p-6">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+                      <ShieldCheck aria-hidden="true" className="size-5" />
+                    </span>
+
+                    <div>
+                      <p className="text-sm font-medium text-[#171717]">
+                        Une réservation active à la fois
+                      </p>
+
+                      <p className="mt-1.5 text-sm font-light leading-relaxed text-muted-foreground">
+                        Une même adresse email ou un même numéro de téléphone ne
+                        peut avoir qu’une réservation active.
+                      </p>
+                    </div>
+                  </div>
+
+                  {submitError ? (
+                    <div
+                      role="alert"
+                      className="mt-6 rounded-xl bg-red-50 px-4 py-3.5 text-sm text-red-800 ring-1 ring-red-100"
+                    >
+                      {submitError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="mt-7 inline-flex min-h-14 w-full items-center justify-center rounded-full bg-[#b44a42] px-7 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-[#9d4039] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                  >
+                    {isSubmitting
+                      ? 'Réservation en cours…'
+                      : 'Confirmer la réservation gratuite'}
+                  </button>
+                </form>
+              )}
             </div>
-          </aside>
+
+            <aside className="h-fit lg:sticky lg:top-8">
+              <div className="overflow-hidden rounded-[1.75rem] bg-white ring-1 ring-black/5">
+                <div className="aspect-[4/3] bg-[#f7f5f1]">
+                  {firstMedia ? (
+                    <img
+                      src={buildApiUrl(firstMedia.imageUrl)}
+                      alt={`${product.brand} ${product.model}`}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
+                      Photo indisponible
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-6 sm:p-7">
+                  <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#b44a42]">
+                    {product.brand}
+                  </p>
+
+                  <h2 className="mt-2 font-[Georgia,'Times_New_Roman',serif] text-3xl font-normal tracking-[-0.035em] text-[#171717]">
+                    {product.model}
+                  </h2>
+
+                  <p className="mt-5 text-2xl font-medium tracking-[-0.03em] text-[#171717]">
+                    {formatPrice(product.priceCents)}
+                  </p>
+
+                  <div className="mt-6 border-t border-black/10 pt-5">
+                    <ReservationStatus
+                      product={product}
+                      reservation={reservation}
+                      isReserved={isReserved}
+                    />
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
         </div>
       </section>
     </PublicPage>
+  )
+}
+
+function SectionHeading({
+  number,
+  title,
+  description,
+}: {
+  number: string
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex gap-5">
+      <span className="pt-1 text-xs font-medium tracking-[0.14em] text-[#b44a42]">
+        {number}
+      </span>
+
+      <div>
+        <h2 className="font-[Georgia,'Times_New_Roman',serif] text-3xl font-normal tracking-[-0.035em] text-[#171717] sm:text-4xl">
+          {title}
+        </h2>
+
+        <p className="mt-2 max-w-xl text-sm font-light leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function ReservationSuccess({
+  reservation,
+}: {
+  reservation: CreatedReservation
+}) {
+  return (
+    <div
+      role="status"
+      className="mt-12 rounded-[2rem] bg-white p-7 ring-1 ring-emerald-100 sm:p-9"
+    >
+      <span className="flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+        <Check aria-hidden="true" className="size-5" />
+      </span>
+
+      <p className="mt-6 text-xs font-medium uppercase tracking-[0.18em] text-emerald-700">
+        Réservation confirmée
+      </p>
+
+      <h2 className="mt-3 font-[Georgia,'Times_New_Roman',serif] text-4xl font-normal tracking-[-0.04em] text-[#171717]">
+        Ce vélo est maintenant à votre nom.
+      </h2>
+
+      <p className="mt-4 max-w-xl text-sm font-light leading-relaxed text-muted-foreground">
+        Votre réservation est active jusqu’au{' '}
+        <strong className="font-medium text-[#171717]">
+          {formatExpiration(reservation.expiresAt)}
+        </strong>
+        .
+      </p>
+    </div>
+  )
+}
+
+function UnavailableState({ product }: { product: ReservationProduct }) {
+  return (
+    <div className="mt-12 rounded-[2rem] bg-white p-7 ring-1 ring-black/5 sm:p-9">
+      <h2 className="font-[Georgia,'Times_New_Roman',serif] text-3xl font-normal tracking-[-0.035em] text-[#171717]">
+        {product.status === 'reserved'
+          ? 'Ce vélo est déjà réservé.'
+          : 'Ce vélo n’est plus disponible.'}
+      </h2>
+
+      <p className="mt-4 max-w-xl text-sm font-light leading-relaxed text-muted-foreground">
+        {product.status === 'reserved' && product.reservedUntil
+          ? `La réservation actuelle est prévue jusqu’au ${formatExpiration(product.reservedUntil)}.`
+          : 'Il ne peut actuellement pas faire l’objet d’une nouvelle réservation.'}
+      </p>
+    </div>
+  )
+}
+
+function ReservationStatus({
+  product,
+  reservation,
+  isReserved,
+}: {
+  product: ReservationProduct
+  reservation: CreatedReservation | null
+  isReserved: boolean
+}) {
+  if (isReserved) {
+    return (
+      <div>
+        <p className="inline-flex items-center gap-2 text-sm font-medium text-amber-700">
+          <Clock3 aria-hidden="true" className="size-4" />
+          Réservé
+        </p>
+
+        {reservation ? (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Jusqu’au {formatExpiration(reservation.expiresAt)}
+          </p>
+        ) : product.reservedUntil ? (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Jusqu’au {formatExpiration(product.reservedUntil)}
+          </p>
+        ) : null}
+      </div>
+    )
+  }
+
+  if (product.status === 'available') {
+    return (
+      <p className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
+        <Check aria-hidden="true" className="size-4" />
+        Disponible à la réservation
+      </p>
+    )
+  }
+
+  return <p className="text-sm font-medium text-muted-foreground">Vendu</p>
+}
+
+function ReservationSkeleton() {
+  return (
+    <div className="bg-[#f7f5f1]">
+      <div className="site-container py-16">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-16">
+          <div>
+            <div className="h-3 w-32 animate-pulse rounded-full bg-black/5" />
+            <div className="mt-5 h-16 w-[34rem] max-w-full animate-pulse rounded-xl bg-black/5" />
+            <div className="mt-5 h-5 w-[30rem] max-w-full animate-pulse rounded-full bg-black/5" />
+
+            <div className="mt-12 grid gap-5 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-20 animate-pulse rounded-xl bg-black/5"
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="h-[29rem] animate-pulse rounded-[1.75rem] bg-black/5" />
+        </div>
+      </div>
+    </div>
   )
 }
