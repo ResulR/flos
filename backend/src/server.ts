@@ -25,6 +25,9 @@ import { tradeInsRouter } from './modules/trade-ins/trade-ins.routes.js'
 
 const app = express()
 
+// The backend only listens on loopback and is exposed through the local Nginx proxy.
+app.set('trust proxy', 'loopback')
+
 app.use(requestLogger)
 app.use(express.json())
 
