@@ -1,4 +1,5 @@
 import express from 'express'
+import helmet from 'helmet'
 
 import {
   checkDatabaseConnection,
@@ -25,8 +26,18 @@ import { tradeInsRouter } from './modules/trade-ins/trade-ins.routes.js'
 
 const app = express()
 
+app.disable('x-powered-by')
+
 // The backend only listens on loopback and is exposed through the local Nginx proxy.
 app.set('trust proxy', 'loopback')
+
+// CSP belongs on the public frontend response, and HSTS must wait for HTTPS.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    strictTransportSecurity: false,
+  }),
+)
 
 app.use(requestLogger)
 app.use(express.json())
