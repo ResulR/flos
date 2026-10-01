@@ -1,4 +1,4 @@
-import { scrypt as nodeScrypt, timingSafeEqual } from 'node:crypto'
+import { randomBytes, scrypt as nodeScrypt, timingSafeEqual } from 'node:crypto'
 
 const KEY_LENGTH = 64
 const COST = 16384
@@ -28,6 +28,20 @@ function deriveKey(password: string, salt: Buffer): Promise<Buffer> {
       },
     )
   })
+}
+
+export async function hashAdminPassword(password: string): Promise<string> {
+  const salt = randomBytes(32)
+  const derived = await deriveKey(password, salt)
+
+  return [
+    ADMIN_PASSWORD_HASH_PREFIX,
+    COST,
+    BLOCK_SIZE,
+    PARALLELIZATION,
+    salt.toString('base64url'),
+    derived.toString('base64url'),
+  ].join('$')
 }
 
 export async function verifyAdminPassword(
