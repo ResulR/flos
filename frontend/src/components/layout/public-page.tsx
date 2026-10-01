@@ -1,7 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 
 import { PublicFooter } from '@/components/layout/public-footer'
-import { PublicHeader } from '@/components/layout/public-header'
+import {
+  PublicHeader,
+  type PublicHeaderVariant,
+} from '@/components/layout/public-header'
 import { apiRequest } from '@/lib/api'
 
 export type PublicContactDetails = {
@@ -12,9 +15,13 @@ export type PublicContactDetails = {
 
 type PublicPageProps = {
   children: ReactNode | ((contact: PublicContactDetails | null) => ReactNode)
+  headerVariant?: PublicHeaderVariant
 }
 
-export function PublicPage({ children }: PublicPageProps) {
+export function PublicPage({
+  children,
+  headerVariant = 'default',
+}: PublicPageProps) {
   const [contact, setContact] = useState<PublicContactDetails | null>(null)
 
   useEffect(() => {
@@ -45,7 +52,7 @@ export function PublicPage({ children }: PublicPageProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <PublicHeader />
+      <PublicHeader variant={headerVariant} />
 
       <main className="flex-1">
         {typeof children === 'function' ? children(contact) : children}

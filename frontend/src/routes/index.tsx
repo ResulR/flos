@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { ArrowRight, BadgeCheck, Bike, RefreshCcw } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 import { ProductCard } from '@/components/catalogue/product-card'
 import { FlowState } from '@/components/feedback/flow-state'
@@ -62,81 +62,91 @@ function Home() {
   }, [])
 
   return (
-    <PublicPage>
-      <section className="overflow-hidden bg-brand-black text-brand-white">
-        <div className="site-container grid min-h-[34rem] items-stretch lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="flex flex-col justify-center py-16 lg:py-24">
-            <p className="type-label mb-5 uppercase tracking-[0.18em] text-brand-red">
-              Flo&apos;s Bikes
+    <PublicPage headerVariant="overlay">
+      <section className="home-hero relative isolate overflow-hidden text-white">
+        <img
+          src="/home/hero-workshop.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 -z-20 size-full object-cover object-center"
+        />
+
+        <div className="home-hero-scrim absolute inset-0 -z-10" />
+
+        <div className="site-container flex min-h-[44rem] items-end pb-14 pt-36 sm:min-h-[48rem] sm:pb-16 lg:min-h-[min(54rem,100svh)] lg:pb-20 lg:pt-40">
+          <div className="max-w-4xl">
+            <p className="home-hero-enter type-label uppercase tracking-[0.2em] text-[#e0b0ac]">
+              Flo&apos;s Bikes · Paris
             </p>
 
-            <h1 className="type-display max-w-3xl text-brand-white">
-              Le vélo d&apos;occasion,
-              <span className="block text-brand-red">sans compromis.</span>
+            <h1 className="home-display home-hero-enter home-hero-enter-delay mt-5 max-w-4xl text-white">
+              Des vélos qui méritent
+              <span className="home-display-accent block">
+                une deuxième route.
+              </span>
             </h1>
 
-            <p className="type-body mt-6 max-w-xl text-brand-gray-400">
-              Découvrez une sélection de vélos de seconde main dans un univers
-              simple, transparent et pensé pour aller droit à l&apos;essentiel.
+            <p className="home-hero-enter home-hero-enter-delay-2 mt-7 max-w-2xl text-base font-light leading-relaxed text-white/78 sm:text-lg">
+              Vélos d&apos;occasion sélectionnés, présentés clairement et prêts
+              à repartir. Une expérience simple pour acheter ou faire reprendre
+              votre vélo.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="home-hero-enter home-hero-enter-delay-3 mt-9 flex flex-col gap-3 sm:flex-row">
               <a
                 href="/catalogue"
-                className="type-button inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-primary px-6 text-primary-foreground transition-colors hover:bg-brand-red-dark"
+                className="group type-button inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#b44a42] px-7 text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#9d4039]"
               >
-                Voir le catalogue
-                <ArrowRight aria-hidden="true" className="size-4" />
+                Découvrir les vélos
+                <ArrowRight
+                  aria-hidden="true"
+                  className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                />
               </a>
 
               <a
                 href="/reprise"
-                className="type-button inline-flex min-h-12 items-center justify-center rounded-md border border-brand-gray-600 px-6 text-brand-white transition-colors hover:border-brand-white"
+                className="type-button inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/45 bg-white/5 px-7 text-white backdrop-blur-sm transition-all duration-300 hover:border-white hover:bg-white/10"
               >
                 Faire reprendre mon vélo
               </a>
             </div>
-          </div>
 
-          <div className="relative hidden min-h-[34rem] lg:block">
-            <div className="absolute inset-y-0 left-12 w-px bg-brand-gray-800" />
-            <div className="absolute right-[-9rem] top-1/2 size-[31rem] -translate-y-1/2 rounded-full border-[5rem] border-brand-red" />
-            <div className="absolute right-[7rem] top-1/2 size-[15rem] -translate-y-1/2 rounded-full border-[2.5rem] border-brand-white/10" />
-
-            <div className="absolute bottom-12 left-12 max-w-xs border-l-2 border-brand-red pl-5">
-              <p className="type-heading-3 text-brand-white">
-                Occasion.
-                <br />
-                Sélection.
-                <br />
-                Confiance.
-              </p>
+            <div className="home-hero-enter home-hero-enter-delay-3 mt-12 flex flex-wrap gap-x-8 gap-y-3 border-t border-white/20 pt-5 text-sm font-light text-white/65">
+              <span>Vélos de seconde main</span>
+              <span>Sélection claire</span>
+              <span>Reprise simple</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="section-space">
+      <section className="bg-[#f7f5f1] py-20 sm:py-24 lg:py-32">
         <div className="site-container">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="type-label uppercase tracking-[0.16em] text-primary">
-                À découvrir
+              <p className="type-label uppercase tracking-[0.2em] text-[#b44a42]">
+                En ce moment
               </p>
 
-              <h2 className="type-heading-2 mt-3">Une sélection qui change.</h2>
+              <h2 className="home-section-title mt-4">
+                Les vélos chez Flo&apos;s.
+              </h2>
             </div>
 
             <a
               href="/catalogue"
-              className="type-label inline-flex items-center gap-2 text-foreground hover:text-primary"
+              className="group inline-flex items-center gap-2 text-sm font-medium text-foreground transition-colors hover:text-[#b44a42]"
             >
-              Tout le catalogue
-              <ArrowRight aria-hidden="true" className="size-4" />
+              Voir tout le catalogue
+              <ArrowRight
+                aria-hidden="true"
+                className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+              />
             </a>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-12 lg:mt-16">
             {isLoading ? (
               <FlowState
                 kind="loading"
@@ -156,11 +166,12 @@ function Home() {
                 description="De nouveaux vélos seront ajoutés au catalogue dès qu’ils seront disponibles."
               />
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
                 {products.map((product) => (
                   <ProductCard
                     key={product.id}
                     href={`/produits/${product.id}`}
+                    variant="editorial"
                     imageSrc={product.imageUrl}
                     brand={product.brand}
                     model={product.model}
@@ -175,85 +186,55 @@ function Home() {
         </div>
       </section>
 
-      <section className="border-y border-border bg-brand-gray-50">
-        <div className="site-container grid gap-px bg-border md:grid-cols-3">
-          <ValueItem
-            icon={<BadgeCheck aria-hidden="true" className="size-6" />}
-            title="Des vélos clairement présentés"
-            text="L’état et les informations essentielles doivent rester faciles à comprendre."
-          />
-
-          <ValueItem
-            icon={<Bike aria-hidden="true" className="size-6" />}
-            title="Le produit avant le décor"
-            text="Des pages pensées pour laisser le vélo au centre de l’expérience."
-          />
-
-          <ValueItem
-            icon={<RefreshCcw aria-hidden="true" className="size-6" />}
-            title="Acheter ou faire reprendre"
-            text="Deux parcours séparés, accessibles rapidement depuis le site."
-          />
-        </div>
-      </section>
-
-      <section className="section-space bg-brand-red text-brand-white">
-        <div className="site-container grid items-center gap-10 lg:grid-cols-[1fr_auto]">
+      <section className="overflow-hidden bg-[#b44a42] text-white">
+        <div className="site-container grid gap-14 py-20 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-24 lg:py-28">
           <div>
-            <p className="type-label uppercase tracking-[0.16em] text-brand-white/70">
-              Reprise
+            <p className="type-label uppercase tracking-[0.2em] text-white/65">
+              Vous avez déjà un vélo ?
             </p>
 
-            <h2 className="type-heading-2 mt-3 max-w-2xl text-brand-white">
-              Votre ancien vélo peut commencer une nouvelle histoire.
+            <h2 className="home-reprise-title mt-5 max-w-3xl">
+              Donnez-lui une
+              <span className="block italic text-white/78">
+                nouvelle route.
+              </span>
             </h2>
 
-            <p className="type-body mt-5 max-w-xl text-brand-white/80">
-              Envoyez les informations que vous connaissez et quelques photos.
-              Les détails techniques pourront être complétés ensuite.
-            </p>
-          </div>
-
-          <a
-            href="/reprise"
-            className="type-button inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-brand-black px-6 text-brand-white transition-colors hover:bg-brand-charcoal"
-          >
-            Demander une reprise
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </a>
-        </div>
-      </section>
-
-      <section className="section-space">
-        <div className="site-container grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div className="relative min-h-[22rem] overflow-hidden rounded-xl bg-brand-black">
-            <div className="absolute -bottom-24 -left-20 size-72 rounded-full border-[3.75rem] border-brand-red" />
-            <div className="absolute right-8 top-8 type-label uppercase tracking-[0.16em] text-brand-white">
-              Flo&apos;s Bikes
-            </div>
-          </div>
-
-          <div>
-            <p className="type-label uppercase tracking-[0.16em] text-primary">
-              Le magasin
-            </p>
-
-            <h2 className="type-heading-2 mt-3">
-              Un commerce spécialisé dans le vélo d&apos;occasion.
-            </h2>
-
-            <p className="type-body mt-5 max-w-xl text-muted-foreground">
-              Flo&apos;s Bikes met l&apos;accent sur une sélection claire, une
-              expérience simple et un contact direct avec le vendeur.
+            <p className="mt-7 max-w-xl text-base font-light leading-relaxed text-white/75">
+              Quelques informations et quelques photos suffisent pour commencer.
+              Nous revenons ensuite vers vous pour la suite.
             </p>
 
             <a
-              href="/a-propos"
-              className="type-label mt-7 inline-flex items-center gap-2 text-foreground hover:text-primary"
+              href="/reprise"
+              className="group mt-9 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-medium text-[#171717] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#f7f5f1]"
             >
-              Découvrir Flo&apos;s Bikes
-              <ArrowRight aria-hidden="true" className="size-4" />
+              Faire reprendre mon vélo
+              <ArrowRight
+                aria-hidden="true"
+                className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+              />
             </a>
+          </div>
+
+          <div className="border-t border-white/25">
+            <RepriseStep
+              number="01"
+              title="Envoyez votre demande"
+              text="Ajoutez les informations que vous connaissez sur votre vélo."
+            />
+
+            <RepriseStep
+              number="02"
+              title="Ajoutez quelques photos"
+              text="Elles nous permettent de mieux comprendre son état."
+            />
+
+            <RepriseStep
+              number="03"
+              title="Nous vous recontactons"
+              text="La suite se fait directement avec vous, simplement."
+            />
           </div>
         </div>
       </section>
@@ -261,24 +242,30 @@ function Home() {
   )
 }
 
-function ValueItem({
-  icon,
+function RepriseStep({
+  number,
   title,
   text,
 }: {
-  icon: React.ReactNode
+  number: string
   title: string
   text: string
 }) {
   return (
-    <div className="bg-brand-gray-50 px-6 py-8 lg:px-8 lg:py-10">
-      <div className="text-primary">{icon}</div>
+    <div className="grid grid-cols-[2.5rem_1fr] gap-4 border-b border-white/25 py-6 sm:grid-cols-[3.25rem_1fr]">
+      <span className="text-xs font-medium tracking-[0.12em] text-white/55">
+        {number}
+      </span>
 
-      <h3 className="mt-5 text-xl font-medium leading-tight">{title}</h3>
+      <div>
+        <h3 className="text-lg font-medium tracking-[-0.015em] text-white">
+          {title}
+        </h3>
 
-      <p className="type-secondary mt-3 max-w-sm text-muted-foreground">
-        {text}
-      </p>
+        <p className="mt-2 max-w-sm text-sm font-light leading-relaxed text-white/65">
+          {text}
+        </p>
+      </div>
     </div>
   )
 }
