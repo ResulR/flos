@@ -1,6 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { LegalPage, LegalSection } from '@/components/legal/legal-page'
+import {
+  LegalPage,
+  LegalPending,
+  LegalSection,
+} from '@/components/legal/legal-page'
 
 export const Route = createFileRoute('/cookies')({
   component: CookiesPage,
@@ -11,36 +15,35 @@ function CookiesPage() {
     <LegalPage eyebrow="Informations légales" title="Politique de cookies">
       <LegalSection title="Stockage utilisé par le site">
         <p>
-          Le panier public est prévu pour être conservé côté navigateur et ne
-          nécessite pas de compte client.
+          Le panier public est conservé dans le navigateur afin de permettre à
+          l’utilisateur de retrouver sa sélection sans créer de compte client.
         </p>
 
         <p>
-          L’espace d’administration prévoit également un cookie de session
-          sécurisé, utilisé pour authentifier l’administrateur.
+          L’espace d’administration utilise également un cookie de session
+          destiné à authentifier l’administrateur.
         </p>
       </LegalSection>
 
-      <LegalSection title="Cookies et technologies supplémentaires">
+      <LegalSection title="Services supplémentaires">
         <p>
           Aucun fournisseur de publicité, outil d’analyse ou mécanisme de
-          consentement supplémentaire n’est documenté comme actif à ce stade du
-          projet.
+          consentement supplémentaire n’est actuellement documenté comme actif
+          sur le site.
         </p>
 
-        <p>
-          <strong>À vérifier avant production :</strong> inventaire définitif
-          des cookies, stockages navigateur, outils de mesure ou services tiers
-          réellement chargés par le site.
-        </p>
+        <LegalPending>
+          Vérifier l’inventaire définitif des cookies, stockages navigateur,
+          outils de mesure et services tiers réellement chargés avant la mise en
+          production publique.
+        </LegalPending>
       </LegalSection>
 
-      <LegalSection title="Préférences">
+      <LegalSection title="Gestion des préférences">
         <p>
-          <strong>À compléter si nécessaire avant production :</strong>{' '}
-          mécanisme de gestion du consentement et procédure permettant de
-          modifier les préférences lorsque des technologies nécessitant un
-          consentement seront effectivement utilisées.
+          Si des technologies nécessitant un consentement sont ajoutées
+          ultérieurement, un mécanisme adapté devra permettre à l’utilisateur
+          d’accepter, refuser ou modifier ses préférences.
         </p>
       </LegalSection>
     </LegalPage>
