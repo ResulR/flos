@@ -9,6 +9,7 @@ import { env } from './config/env.js'
 import { logger } from './config/logger.js'
 import { errorHandler } from './http/error-handler.js'
 import { requestLogger } from './http/request-logger.js'
+import { requireAdminSameOrigin } from './modules/admin-auth/admin-csrf.middleware.js'
 import { requireAdminSession } from './modules/admin-auth/admin-auth.middleware.js'
 import { adminAuthRouter } from './modules/admin-auth/admin-auth.routes.js'
 import { adminDashboardRouter } from './modules/admin-dashboard/admin-dashboard.routes.js'
@@ -50,6 +51,7 @@ app.get('/health', (_req, res) => {
   })
 })
 
+app.use('/admin', requireAdminSameOrigin)
 app.use('/admin/auth', adminAuthRouter)
 app.use('/admin', requireAdminSession)
 app.use('/admin/dashboard', adminDashboardRouter)
